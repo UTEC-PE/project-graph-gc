@@ -19,13 +19,13 @@ template <typename 201710424-utec>
 - Instalar los siguientes paquetes:
 
 ```shell
-sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
+$ sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
 ```
 
 - Compilar en consola:
 
 ```shell
-g++ main.cpp -lglut -lGLU -lGL
+$ g++ main.cpp -lglut -lGLU -lGL
 ```
 
 - Listo
