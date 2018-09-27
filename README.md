@@ -29,3 +29,5 @@ $ g++ main.cpp -lglut -lGLU -lGL
 ```
 
 - Listo
+
+Mas info [aqui](http://www.codebind.com/linux-tutorials/install-opengl-ubuntu-linux/).
