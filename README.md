@@ -14,7 +14,7 @@ template <typename 201710424-utec>
 
 # Instrucciones:
 
-*Linux:*
+**Ubuntu Linux:**
 
 - Instalar los siguientes paquetes:
 
