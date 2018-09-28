@@ -12,12 +12,12 @@ template <typename G>
 class Read {
 	typedef typename G::N N;
 	typedef typename G::E E;
-		
+
 	public:
 		Read(char* file) {
             // TODO
         }
-		
+
 		graph& getGraph() {
             // TODO
         }
