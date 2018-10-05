@@ -16,12 +16,7 @@ public:
 };
 
 template <typename Tr> class Graph {
-private:
-  NodeSeq nodes;
-  NodeIte ni;
-  EdgeIte ei;
 
-public:
   typedef Graph<Tr> self;
   typedef Node<self> node;
   typedef Edge<self> edge;
@@ -32,23 +27,42 @@ public:
   typedef typename NodeSeq::iterator NodeIte;
   typedef typename EdgeSeq::iterator EdgeIte;
 
+private:
+  NodeSeq nodes;
+  NodeIte ni;
+  EdgeIte ei;
+
+public:
   Graph();
 
-  addVertex(node *vertex) { nodes.push_back(vertex); }
-  addEdge(N v1, N v2, E weight, bool dir) {
-    node *n1 = nullptr;
-    node *n2 = nullptr;
-    if (dir) {
-      for (auto v : nodes) {
-        if (v->data == v1) {
-          n1 = v;
-        } else if (v->data == v2) {
-          n2 = v;
-        }
-        if (n1 && n2) {
-          break;
-        }
+  void addVertex(double x, double y, N data) {
+    node vertex(x, y, data);
+    nodes.push_back(vertex);
+  }
+  void addEdge(N v1, N v2, E weight, bool dir) {
+    node *vn1[2] = {nullptr, nullptr};
+    node *vn2[2] = {nullptr, nullptr};
+    for (auto const &v : this->nodes) {
+      if (v->data == v1) {
+        vn1[0] = v;
+        vn2[1] = v;
+      } else if (v->data == v2) {
+        vn1[1] = v;
+        vn2[0] = v;
       }
+      if (vn1[0] && vn1[1]) {
+        break;
+      }
+    }
+    edge e1(weight, dir, vn1);
+    edge e2(weight, dir, vn2);
+
+    if (dir) {
+      vn1[0]->addEdge(e1);
+      vn1[1]->addEdge(e1);
+    } else {
+      vn1[0]->addEdge(e1);
+      vn1[1]->addEdge(e2);
     }
   }
 };

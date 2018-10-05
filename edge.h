@@ -5,14 +5,14 @@
 
 template <typename G> class Edge {
 
+  typedef typename G::E E;
+  typedef typename G::node node;
+
 private:
   E data;
   bool dir;
 
 public:
-  typedef typename G::E E;
-  typedef typename G::node node;
-
   node *nodes[2];
 
   Edge(E data, bool dir, node *nodes[2]) : data(data), dir(dir), nodes(nodes) {}
