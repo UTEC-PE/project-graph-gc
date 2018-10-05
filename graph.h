@@ -65,6 +65,9 @@ public:
       vn1[1]->addEdge(e2);
     }
   }
+  void removeVertex() {}
+  void removeEdge() {}
+  void print() {}
 };
 
 typedef Graph<Traits> graph;
