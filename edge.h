@@ -4,7 +4,7 @@
 #include "node.h"
 
 template <typename G> class Edge {
-
+public:
   typedef typename G::E E;
   typedef typename G::node node;
 
@@ -15,7 +15,10 @@ private:
 public:
   node *nodes[2];
 
-  Edge(E data, bool dir, node *nodes[2]) : data(data), dir(dir), nodes(nodes) {}
+  Edge(E data, bool dir, node *v1, node *v2) : data(data), dir(dir) {
+    (this->nodes)[0] = v1;
+    (this->nodes)[1] = v2;
+  }
 };
 
 #endif
