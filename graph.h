@@ -1,8 +1,10 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include <algorithm>
 #include <iostream>
 #include <list>
+#include <stack>
 #include <vector>
 
 #include "edge.h"
@@ -37,6 +39,7 @@ private:
   bool i_indexed;
   int counter;
   int graph_size;
+  bool directed;
 
 public:
   /* ***** CONSTRUCTORS ***** */
@@ -86,11 +89,8 @@ public:
     edge *e1 = new edge(weight, dir, vn1, vn2);
 
     if (dir) {
-
       vn1->addEdge(e1);
-
       vn2->addEdge(e1);
-
     } else {
       edge *e2 = new edge(weight, dir, vn2, vn1);
       vn1->addEdge(e1);
@@ -103,6 +103,41 @@ public:
   /* ***** UTILITY METHODS ***** */
 
   void print() {}
+
+  /* ***** ALGORITHMS  ***** */
+
+  void dfs(node *v = nullptr) {
+    // If starting node is null, initialize starting node with first node in
+    // graph
+    if (!v) {
+      v = (this->nodes)[0];
+    }
+
+    std::vector<node *> output;
+    std::vector<node *> visited;
+    std::stack<node *> nodes_stack;
+    nodes_stack.push(v);
+
+    while (!(nodes_stack.empty())) {
+      v = nodes_stack.top();
+      nodes_stack.pop();
+
+      if (!(v->in(visited))) {
+        std::cout << v->print() << " ";
+        visited.push_back(v);
+      }
+
+      for (const auto &edge : v->edges) {
+        if (edge->nodes[0] == v && !(v->in(visited))) {
+          nodes_stack.push(edge->nodes[1]);
+        }
+      }
+    }
+  }
+  void bfs() {}
+
+  void prim() {}
+  self *kruskal() {}
 };
 
 typedef Graph<Traits> graph;
