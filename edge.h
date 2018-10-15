@@ -3,17 +3,22 @@
 
 #include "node.h"
 
-template <typename G>
-class Edge {
-    public:
-        typedef typename G::E E;
-        typedef typename G::node node;
+template <typename G> class Edge {
+public:
+  typedef typename G::E E;
+  typedef typename G::node node;
 
-        node* nodes[2];
+private:
+  E data;
+  bool dir;
 
-    private:
-        E data;
-        bool dir;
+public:
+  node *nodes[2];
+
+  Edge(E data, bool dir, node *v1, node *v2) : data(data), dir(dir) {
+    (this->nodes)[0] = v1;
+    (this->nodes)[1] = v2;
+  }
 };
 
 #endif
