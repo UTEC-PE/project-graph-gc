@@ -2,19 +2,26 @@
 #define DATA_STRUCTURES_H
 
 #include <iostream>
+#include <map>
 
-template <typename T> class Heap {
+#include "node.h"
+
+template <typename D> class Heap {
+public:
+  typedef Heap<D> self;
+  typedef Node<self> node;
+
 private:
-  T *container;
+  D *container;
   int containerSize;
   bool non_decreasing;
 
 public:
   Heap() : container(nullptr), containerSize(0), non_decreasing(1) {}
-  Heap(T *container_, int containerSize_, bool non_decreasing_ = 1)
+  Heap(D *container_, int containerSize_, bool non_decreasing_ = 1)
       : container(container_), containerSize(containerSize_),
         non_decreasing(non_decreasing_) {}
-  T *HeapSort() {
+  D *HeapSort() {
     int n = this->containerSize - 1;
     if (this->non_decreasing) {
       while (n--) {
@@ -78,7 +85,7 @@ public:
     }
   }
   void swap(int pos1, int pos2) {
-    T temp = this->container[pos1];
+    D temp = this->container[pos1];
     this->container[pos1] = this->container[pos2];
     this->container[pos2] = temp;
   }
@@ -90,51 +97,51 @@ public:
   }
 };
 
-template <typename T> class Heap {
+template <typename D> class DisjointSet {
+public:
+  typedef DisjointSet<D> self;
+  typedef Node<self> node;
+
 private:
-  T *container;
-  int containerSize;
+  std::map<int, node *> nodes;
 
 public:
-  Heap() : container(nullptr), containerSize(0) {}
-  Heap(T *container_, int containerSize_)
-      : container(container_), containerSize(containerSize_) {}
-  T *HeapSort() {
-    int n = this->containerSize - 1;
-    while (n--) {
-      this->heapifyMAX(n + 1);
-      swap(0, n + 1);
-    }
-    return this->container;
+  DisjointSet(){};
+  void makeSet(int data) {
+    node *vertex = new node(data);
+    this->nodes[data] = vertex;
   }
-  void heapifyMAX(int lastpos) {
-    int startpos = ((lastpos) / 2) + 1;
-    while (startpos--) {
-      this->doHeapMAX(startpos, lastpos);
-    }
-  }
-  void doHeapMAX(int pos, int lastpos) {
-    if ((pos * 2 + 1) <= lastpos) {
-      if (this->container[pos * 2 + 1] > this->container[pos]) {
-        swap(pos * 2 + 1, pos);
+
+  bool unionSet(int data1, int data2) {
+    node *parent1 = findSet(data1);
+    node *parent2 = findSet(data2);
+
+    if (parent1 != parent2) {
+      if (parent1->rank >= parent2->rank) {
+        parent1->rank = (parent1->rank == parent2->rank) ? parent1->rank + 1
+                                                         : parent1->rank;
+        parent2->parent = parent1;
+      } else {
+        parent1->parent = parent2;
       }
+
+      return true;
     }
-    if ((pos * 2 + 2) <= lastpos) {
-      if (this->container[pos * 2 + 2] > this->container[pos]) {
-        swap(pos * 2 + 2, pos);
-      }
+
+    return false;
+  }
+  node *findSet(int data) { return findSet(this->nodes[data]); }
+
+  node *findSet(node *vertex) {
+    node *current = vertex;
+    while (current != current->parent) {
+      current = current->parent;
     }
+
+    vertex->parent = current;
+    return current;
   }
-  void swap(int pos1, int pos2) {
-    T temp = this->container[pos1];
-    this->container[pos1] = this->container[pos2];
-    this->container[pos2] = temp;
-  }
-  void printArray() {
-    for (int i = 0; i < this->containerSize; i++) {
-      std::cout << this->container[i] << " ";
-    }
-    std::cout << std::endl;
-  }
+  ~DisjointSet(){};
 };
+
 #endif
