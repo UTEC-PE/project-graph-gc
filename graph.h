@@ -6,12 +6,13 @@
 
 #include "node.h"
 #include "edge.h"
+#include "read.h"
 
 using namespace std;
 
 class Traits {
 	public:
-		typedef char N;
+		typedef int N;
 		typedef int E;
 };
 

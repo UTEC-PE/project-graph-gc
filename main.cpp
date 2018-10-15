@@ -6,5 +6,6 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    return 0;
+  graph myGraph("graph1.txt");
+  return 0;
 }
