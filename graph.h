@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <map>
 #include <set>
 #include <stack>
 #include <vector>
@@ -25,13 +26,13 @@ public:
 template <typename Tr> class Graph {
 
 public:
+  typedef typename Tr::N N;
+  typedef typename Tr::E E;
   typedef Graph<Tr> self;
   typedef Node<self> node;
   typedef Edge<self> edge;
-  typedef vector<node *> NodeSeq;
+  typedef map<N, node *> NodeSeq;
   typedef list<edge *> EdgeSeq;
-  typedef typename Tr::N N;
-  typedef typename Tr::E E;
   typedef typename NodeSeq::iterator NodeIte;
   typedef typename EdgeSeq::iterator EdgeIte;
 
@@ -39,55 +40,36 @@ private:
   NodeSeq nodes;
   NodeIte ni;
   EdgeIte ei;
-  bool i_indexed;
-  int counter;
-  int graph_size;
   bool directed;
+  int counter;
 
 public:
   /* ***** CONSTRUCTORS ***** */
   // Empty explicit initialization might be unnecessary
 
-  Graph(bool indexation = 1)
-      : nodes(), i_indexed(indexation), counter(0), graph_size(0){};
-  Graph(int number_of_vertices, bool indexation = 1)
-      : nodes(), i_indexed(indexation), counter(0),
-        graph_size(number_of_vertices) {
-    (this->nodes).resize(number_of_vertices);
-  }
+  Graph() : nodes(), counter(0){};
+  Graph(int number_of_vertices) : nodes(), counter(0){};
 
   /* ***** MANIPULATION METHODS ***** */
 
   // Integer indexed method
   void addVertex(double x, double y) {
-    if (this->counter < this->graph_size) {
-      (this->nodes)[this->counter] = new node(this->counter, x, y);
-    } else {
-      (this->nodes).push_back(new node(this->counter, x, y));
-      (this->graph_size)++;
-    }
+    (this->nodes)[this->counter] = new node(this->counter, x, y);
     (this->counter)++;
   }
 
-  void addEdge(N v1, N v2, E weight, bool dir) {
-    node *vn1 = nullptr;
-    node *vn2 = nullptr;
-
-    if (this->i_indexed) {
-      vn1 = (this->nodes)[v1];
-      vn2 = (this->nodes)[v2];
+  void addVertex(N data, double x, double y) {
+    if ((this->nodes).find(data) == (this->nodes).end()) {
+      (this->nodes)[data] = new node(data, x, y);
+      (this->counter)++;
     } else {
-      for (auto const &v : this->nodes) {
-        if (v->is(v1)) {
-          vn1 = v;
-        } else if (v->is(v2)) {
-          vn2 = v;
-        }
-        if (vn1 && vn1) {
-          break;
-        }
-      }
+      cout << "you're trying to override a node" << endl;
     }
+  }
+
+  void addEdge(N v1, N v2, E weight, bool dir) {
+    node *vn1 = (this->nodes)[v1];
+    node *vn2 = (this->nodes)[v2];
 
     edge *e1 = new edge(weight, dir, vn1, vn2);
 
