@@ -18,6 +18,6 @@ int main(int argc, char *argv[]) {
   g.addEdge(1, 0, 5, 1);
   g.addEdge(1, 3, 5, 1);
   g.addEdge(1, 2, 5, 1);
-  g.dfs();
+  g.prim();
   return 0;
 }

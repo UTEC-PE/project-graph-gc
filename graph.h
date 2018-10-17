@@ -3,10 +3,13 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <list>
+#include <set>
 #include <stack>
 #include <vector>
 
+#include "data_structures.h"
 #include "edge.h"
 #include "node.h"
 
@@ -137,7 +140,23 @@ public:
   void bfs() {}
 
   void prim() {}
-  self *kruskal() {}
+  self *kruskal() {
+    self A();
+    DisjointSet<N> DS();
+    std::set<edge, non_dec<N>> GE;
+
+    for (auto v : nodes) {
+      DS.makeSet(v.data, v.x, v.y);
+      for (auto e : v.edges) {
+        GE.push_back(e);
+      }
+    }
+
+    std::set<edge>::iterator it;
+    for (it = GE.begin(); it != GE.end(); ++it)
+      std::cout << ' ' << *it;
+    std::cout << '\n';
+  }
 };
 
 typedef Graph<Traits> graph;

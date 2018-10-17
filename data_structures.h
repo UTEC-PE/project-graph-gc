@@ -1,10 +1,17 @@
 #ifndef DATA_STRUCTURES_H
 #define DATA_STRUCTURES_H
 
+#include "node.h"
 #include <iostream>
 #include <map>
 
-#include "node.h"
+template <typename D> struct non_dec {
+  typedef non_dec<D> self;
+  typedef Node<self> node;
+  bool operator()(const node &v1, const node &v2) const {
+    return v1.data < v2.data;
+  }
+};
 
 template <typename D> class Heap {
 public:
@@ -103,16 +110,16 @@ public:
   typedef Node<self> node;
 
 private:
-  std::map<int, node *> nodes;
+  std::map<D, node *> nodes;
 
 public:
   DisjointSet(){};
-  void makeSet(int data) {
-    node *vertex = new node(data);
+  void makeSet(D data, double x, double y) {
+    node *vertex = new node(data, x, y);
     this->nodes[data] = vertex;
   }
 
-  bool unionSet(int data1, int data2) {
+  bool unionSet(D data1, D data2) {
     node *parent1 = findSet(data1);
     node *parent2 = findSet(data2);
 
@@ -130,7 +137,7 @@ public:
 
     return false;
   }
-  node *findSet(int data) { return findSet(this->nodes[data]); }
+  node *findSet(D data) { return findSet(this->nodes[data]); }
 
   node *findSet(node *vertex) {
     node *current = vertex;
