@@ -24,7 +24,10 @@ private:
 		  string lineGraphFile;
 		  if (graphFile.is_open()) {
 		    getline(graphFile,lineGraphFile);
-		    int numberNodes = stoi(lineGraphFile);
+		    int numberNodes = 0;
+				bool dirigedGraph = false;
+				readGraphInformation(numberNodes, dirigedGraph);
+				graph readGraph(numberNodes, dirigedGraph);
 		    for (int i = 0; i < numberNodes; i++) {
 					N tag=i;
 					double x, y;
@@ -37,9 +40,9 @@ private:
 						N node1;
 						N node2;
 						E edgeWeight;
-						bool dirigedGraph;
-						readNodeInformation(node1,node2,edgeWeight,dirigedGraph,lineGraphFile);
-						readGraph->addEdge(node1, node2, edgeWeight, dirigedGraph);
+						bool dirigedEdge;
+						readNodeInformation(node1,node2,edgeWeight,dirigedEdge,lineGraphFile);
+						readGraph->addEdge(node1, node2, edgeWeight, dirigedEdge);
 				}
 		    graphFile.close();
 		  }else throw("Unable to open the graph file");
@@ -57,14 +60,20 @@ private:
 			}
 		};
 
-		void readNodeInformation (N &node1, N &node2, E &edgeWeight, bool &dirigedGraph, string lineGraphFile) {
+		void readNodeInformation (N &node1, N &node2, E &edgeWeight, bool &dirigedEdge, string lineGraphFile) {
 			node1 = stoi(lineGraphFile.substr(0,lineGraphFile.find(" ")));
 			lineGraphFile = lineGraphFile.substr(lineGraphFile.find(" ")+1);
 			node2 = stoi(lineGraphFile.substr(0,lineGraphFile.find(" ")));
 			lineGraphFile = lineGraphFile.substr(lineGraphFile.find(" ")+1);
 			edgeWeight = stoi(lineGraphFile.substr(0,lineGraphFile.find(" ")));
 			lineGraphFile = lineGraphFile.substr(lineGraphFile.find(" ")+1);
-			dirigedGraph = stoi(lineGraphFile);
+			dirigedEdge = stoi(lineGraphFile);
+		};
+
+		void readGraphInformation (int &numberNodes, bool &dirigedGraph, string lineGraphFile) {
+			numberNodes = stoi(lineGraphFile.substr(0,lineGraphFile.find(" ")));
+			lineGraphFile = lineGraphFile.substr(lineGraphFile.find(" ")+1);
+			dirigedEdge = stoi(lineGraphFile);
 		};
 
 		graph& getGraph() {
