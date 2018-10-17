@@ -6,6 +6,7 @@
 #include <iterator>
 #include <list>
 #include <map>
+#include <queue>
 #include <set>
 #include <stack>
 #include <vector>
@@ -48,7 +49,19 @@ public:
   // Empty explicit initialization might be unnecessary
 
   Graph() : nodes(), counter(0){};
-  Graph(int number_of_vertices) : nodes(), counter(0){};
+  Graph(Graph<Tr> g, char type_of_copy_constructor) {
+    switch (type_of_copy_constructor) {
+    case 'v':
+      this->nodes = g.vertices();
+      break;
+    case 'e':
+      break;
+    default:
+      break;
+    }
+  }
+  Graph(int number_of_vertices, bool directed)
+      : nodes(), directed(directed), counter(0){};
 
   /* ***** MANIPULATION METHODS ***** */
 
@@ -81,6 +94,14 @@ public:
       vn1->addEdge(e1);
       vn2->addEdge(e2);
     }
+  }
+
+  std::map<int, node *> vertices() {
+    std::map<int, node *> vs;
+    for (auto &v : this->nodes) {
+      vs[v->data] = new node(v->data, v->x, v->y);
+    }
+    return vs;
   }
   void removeVertex() {}
   void removeEdge() {}
@@ -122,22 +143,37 @@ public:
   void bfs() {}
 
   void prim() {}
-  self *kruskal() {
-    self A();
-    DisjointSet<N> DS();
-    std::set<edge, non_dec<N>> GE;
 
-    for (auto v : nodes) {
-      DS.makeSet(v.data, v.x, v.y);
-      for (auto e : v.edges) {
-        GE.push_back(e);
+  self *kruskal() {
+    self A(this);
+    DisjointSet<self> DS;
+    std::set<edge, non_dec_unique<edge>> GE;
+
+    for (auto &v : nodes) {
+      DS.makeSet((v.second)->data, (v.second)->x, (v.second)->y);
+      for (auto e : (v.second)->edges) {
+        if (e->nodes)
+          GE.insert(*e);
       }
     }
 
-    std::set<edge>::iterator it;
-    for (it = GE.begin(); it != GE.end(); ++it)
-      std::cout << ' ' << *it;
-    std::cout << '\n';
+    typename std::set<edge>::iterator it;
+    for (it = GE.begin(); it != GE.end(); ++it) {
+
+      std::cout << *it << '\n';
+    }
+    std::cout << '\n' << "finish\n";
+
+    for (auto &e : GE) {
+      node *parent1 = findSet(e->nodes[0]);
+      node *parent2 = findSet(e->nodes[1]);
+
+      if (parent1 != parent2) {
+        A[(e->nodes[0])->data].addEdge(e);
+        DS.unionSet(parent1, parent2);
+      }
+    }
+    return A;
   }
 };
 
