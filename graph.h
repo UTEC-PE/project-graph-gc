@@ -49,14 +49,22 @@ public:
   // Empty explicit initialization might be unnecessary
 
   Graph() : nodes(), counter(0){};
-  Graph(Graph<Tr> g, char type_of_copy_constructor) {
+
+  // Copy constructor to 1) copy vertices, edges or entire graph
+  Graph(Graph<Tr> *g, char type_of_copy_constructor) {
     switch (type_of_copy_constructor) {
     case 'v':
-      this->nodes = g.vertices();
+      this->nodes = g->vertices();
+      this->directed = g->isDirected();
+      this->counter = g->lastNodeTag();
       break;
     case 'e':
+      // not sure if this is useful
       break;
     default:
+      this->nodes = g->adjacencylist();
+      this->directed = g->isDirected();
+      this->counter = g->lastNodeTag();
       break;
     }
   }
@@ -96,19 +104,25 @@ public:
     }
   }
 
-  std::map<int, node *> vertices() {
-    std::map<int, node *> vs;
-    for (auto &v : this->nodes) {
-      vs[v->data] = new node(v->data, v->x, v->y);
-    }
-    return vs;
-  }
   void removeVertex() {}
   void removeEdge() {}
 
   /* ***** UTILITY METHODS ***** */
 
   void print() {}
+  std::map<int, node *> vertices() {
+    std::map<int, node *> vs;
+    for (auto &v : this->nodes) {
+      vs[v.second->data] = new node(v.second->data, v.second->x, v.second->y);
+    }
+    return vs;
+  }
+  std::map<int, node *> adjacencylist() {
+    // hope this doesn't pass the adjacency list by reference
+    return this->nodes;
+  }
+  bool isDirected() { return this->directed; }
+  int lastNodeTag() { return this->counter; }
 
   /* ***** ALGORITHMS  ***** */
 
@@ -118,6 +132,8 @@ public:
     if (!v) {
       v = (this->nodes)[0];
     }
+
+    self A(this, 'v');
 
     std::vector<node *> output;
     std::vector<node *> visited;
@@ -145,7 +161,7 @@ public:
   void prim() {}
 
   self *kruskal() {
-    self A(this);
+    self A(this, 'v');
     DisjointSet<self> DS;
     std::set<edge, non_dec_unique<edge>> GE;
 
