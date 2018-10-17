@@ -12,7 +12,6 @@
 
 #include "data_structures.h"
 #include "edge.h"
-#include "read.h"
 #include "node.h"
 
 using namespace std;
@@ -48,10 +47,6 @@ public:
   // Empty explicit initialization might be unnecessary
 
   Graph() : nodes(), counter(0){};
-	Graph(string graphFile) {
-		Read readGraph(graphFile);
-		this=readGraph.getGraph();
-	};
   Graph(int number_of_vertices, bool directedGraph) : nodes(), counter(0){};
 
   /* ***** MANIPULATION METHODS ***** */
@@ -126,7 +121,7 @@ public:
   void bfs() {}
 
   void prim() {}
-  self *kruskal() {
+  /*self *kruskal() {
     self A();
     DisjointSet<N> DS();
     std::set<edge, non_dec<N>> GE;
@@ -142,7 +137,7 @@ public:
     for (it = GE.begin(); it != GE.end(); ++it)
       std::cout << ' ' << *it;
     std::cout << '\n';
-  }
+  }*/
 };
 
 typedef Graph<Traits> graph;

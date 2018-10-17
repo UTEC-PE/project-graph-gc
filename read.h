@@ -26,33 +26,34 @@ private:
 		    getline(graphFile,lineGraphFile);
 		    int numberNodes = 0;
 				bool dirigedGraph = false;
-				readGraphInformation(numberNodes, dirigedGraph);
-				graph readGraph(numberNodes, dirigedGraph);
+				readGraphInformation(numberNodes, dirigedGraph, lineGraphFile);
+				graph tempGraph(numberNodes, dirigedGraph);
+				this->readGraph = tempGraph;
 		    for (int i = 0; i < numberNodes; i++) {
 					N tag=i;
-					double x, y;
+					float x=0, y=0;
 					getline(graphFile,lineGraphFile);
-		      readCoordinateTag(x,y,name,lineGraphFile);
-					readGraph->addVertex(x,y,tag);
+		      readCoordinateTag(x,y,tag,lineGraphFile);
+					this->readGraph.addVertex(tag,x,y);
 		    }
 		    getline(graphFile,lineGraphFile);
 				while(getline(graphFile,lineGraphFile)) {
-						N node1;
-						N node2;
-						E edgeWeight;
-						bool dirigedEdge;
+						N node1=0;
+						N node2=0;
+						E edgeWeight=0;
+						bool dirigedEdge=false;
 						readNodeInformation(node1,node2,edgeWeight,dirigedEdge,lineGraphFile);
-						readGraph->addEdge(node1, node2, edgeWeight, dirigedEdge);
+						this->readGraph.addEdge(node1, node2, edgeWeight, dirigedEdge);
 				}
 		    graphFile.close();
 		  }else throw("Unable to open the graph file");
     }
 
-		void readCoordinateTag (double &xCoordinate, double &yCoordinate, N &tag, string line) {
-			xCoordinate = stoi(line.substr(0,line.find(" ")));
+		void readCoordinateTag (float &xCoordinate, float &yCoordinate, N &tag, string line) {
+			xCoordinate = stof(line.substr(0,line.find(" ")));
 			line = line.substr(line.find(" ")+1);
 			if (string::npos!=line.find(" ")) {
-				yCoordinate = stoi(line.substr(0,line.find(" ")));
+				yCoordinate = stof(line.substr(0,line.find(" ")));
 				line = line.substr(line.find(" ")+1);
 				tag = stoi(line);
 			}else{
@@ -73,10 +74,10 @@ private:
 		void readGraphInformation (int &numberNodes, bool &dirigedGraph, string lineGraphFile) {
 			numberNodes = stoi(lineGraphFile.substr(0,lineGraphFile.find(" ")));
 			lineGraphFile = lineGraphFile.substr(lineGraphFile.find(" ")+1);
-			dirigedEdge = stoi(lineGraphFile);
+			dirigedGraph = stoi(lineGraphFile);
 		};
 
-		graph& getGraph() {
+		graph getGraph() {
 			return this->readGraph;
     }
 };
