@@ -10,6 +10,7 @@ template <typename G> class Edge {
 public:
   typedef typename G::E E;
   typedef typename G::node node;
+  typedef typename G::N N;
 
   E data;
   bool dir;
@@ -39,6 +40,11 @@ public:
   inline bool operator<(const Edge<G> edge) const {
     return this->data < edge.data;
   }
+
+  E printWeight() {return data;};
+  N printV1() {return (this->nodes)[0]->print();};
+  N printV2() {return (this->nodes)[1]->print();};
+  bool printDir() {return this->dir;};
 };
 
 #endif

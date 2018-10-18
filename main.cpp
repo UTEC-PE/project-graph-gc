@@ -2,10 +2,12 @@
 #include <iostream>
 
 #include "graph.h"
+#include "read.h"
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
+
 
   graph g(4, true);
   g.addVertex(13.0, 6.0);
@@ -47,5 +49,10 @@ int main(int argc, char *argv[]) {
   g2.addEdge(5, 6, 5, 0);
   g2.dfs();
   g2.bfs();
+
+  Read<graph> readGraph("graph1.txt");
+  graph mygraph =readGraph.getGraph();
+  mygraph.print();
+
   return 0;
 }

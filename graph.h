@@ -18,10 +18,9 @@
 using namespace std;
 
 class Traits {
-public:
-  // typedef char *N;
-  typedef int N;
-  typedef int E;
+	public:
+		typedef int N;
+		typedef int E;
 };
 
 template <typename Tr> class Graph {
@@ -72,6 +71,7 @@ public:
   }
   Graph(int number_of_vertices, bool directed)
       : nodes(), directed(directed), counter(0){};
+
 
   /* ***** MANIPULATION METHODS ***** */
 
@@ -128,7 +128,6 @@ public:
 
   /* ***** UTILITY METHODS ***** */
 
-  void print() {}
   std::map<int, node *> vertices() {
     std::map<int, node *> vs;
     for (auto &v : this->nodes) {
@@ -142,6 +141,22 @@ public:
   }
   inline bool isDirected() { return this->directed; }
   inline int lastNodeTag() { return this->counter; }
+
+  void print() {
+		std::cout << this->counter <<' ' << this->directed << "\n\n";
+		for (int i = 0; i < this->counter; i++) {
+			std::cout << (this->nodes)[i]->print() << '\n';
+		}
+		std::cout << '\n';
+		for (int i = 0; i < this->counter; i++) {
+			for (EdgeIte it = ((this->nodes)[i])->edges.begin(); it != (this->nodes)[i]->edges.end(); it++) {
+				std::cout << (*it)->printV1() << ' ';
+				std::cout << (*it)->printV2() << ' ';
+				std::cout << (*it)->printWeight() << ' ';
+				std::cout << (*it)->printDir() << '\n';
+			}
+		}
+	};
 
   /* ***** ALGORITHMS  ***** */
 
@@ -227,7 +242,6 @@ public:
   }
 
   void prim() {}
-
   self *kruskal() {
     self A(this, 'v');
     DisjointSet<self> DS;
@@ -259,6 +273,7 @@ public:
     }
     return A;
   }
+
 };
 
 typedef Graph<Traits> graph;
