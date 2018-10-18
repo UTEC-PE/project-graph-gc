@@ -86,7 +86,21 @@ public:
 
   /* ***** UTILITY METHODS ***** */
 
-  void print() {}
+  void print() {
+		std::cout << this->counter <<' ' << this->directed << "\n\n";
+		for (int i = 0; i < this->counter; i++) {
+			std::cout << (this->nodes)[i]->print() << '\n';
+		}
+		std::cout << '\n';
+		for (int i = 0; i < this->counter; i++) {
+			for (EdgeIte it = ((this->nodes)[i])->edges.begin(); it != (this->nodes)[i]->edges.end(); it++) {
+				std::cout << (*it)->printV1() << ' ';
+				std::cout << (*it)->printV2() << ' ';
+				std::cout << (*it)->printWeight() << ' ';
+				std::cout << (*it)->printDir() << '\n';
+			}
+		}
+	};
 
   /* ***** ALGORITHMS  ***** */
 

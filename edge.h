@@ -7,6 +7,7 @@ template <typename G> class Edge {
 public:
   typedef typename G::E E;
   typedef typename G::node node;
+  typedef typename G::N N;
 
 private:
   E data;
@@ -19,6 +20,10 @@ public:
     (this->nodes)[0] = v1;
     (this->nodes)[1] = v2;
   }
+  E printWeight() {return data;};
+  N printV1() {return (this->nodes)[0]->print();};
+  N printV2() {return (this->nodes)[1]->print();};
+  bool printDir() {return this->dir;};
 };
 
 #endif

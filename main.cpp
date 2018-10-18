@@ -9,5 +9,6 @@ using namespace std;
 int main(int argc, char *argv[]) {
   Read<graph> readGraph("graph1.txt");
   graph mygraph =readGraph.getGraph();
+  mygraph.print();
   return 0;
 }
