@@ -1,22 +1,22 @@
 #ifndef DATA_STRUCTURES_H
 #define DATA_STRUCTURES_H
 
-#include "node.h"
+#include "graph.h"
 #include <iostream>
 #include <map>
 
-template <typename D> struct non_dec {
-  typedef non_dec<D> self;
-  typedef Node<self> node;
-  bool operator()(const node &v1, const node &v2) const {
-    return v1.data < v2.data;
+template <typename D> struct non_dec_unique {
+  inline bool operator()(const D &x1, const D &x2) const {
+    return !(x1 == x2) && (x1 < x2);
   }
 };
 
 template <typename D> class Heap {
 public:
-  typedef Heap<D> self;
-  typedef Node<self> node;
+  typedef typename D::N N;
+  typedef typename D::E E;
+  typedef typename D::edge edge;
+  typedef typename D::node node;
 
 private:
   D *container;
@@ -106,20 +106,22 @@ public:
 
 template <typename D> class DisjointSet {
 public:
-  typedef DisjointSet<D> self;
-  typedef Node<self> node;
+  typedef typename D::N N;
+  typedef typename D::E E;
+  typedef typename D::edge edge;
+  typedef typename D::node node;
 
 private:
-  std::map<D, node *> nodes;
+  std::map<N, node *> nodes;
 
 public:
   DisjointSet(){};
-  void makeSet(D data, double x, double y) {
+  void makeSet(N data, double x, double y) {
     node *vertex = new node(data, x, y);
-    this->nodes[data] = vertex;
+    (this->nodes)[data] = vertex;
   }
 
-  bool unionSet(D data1, D data2) {
+  bool unionSet(N data1, N data2) {
     node *parent1 = findSet(data1);
     node *parent2 = findSet(data2);
 
@@ -137,7 +139,16 @@ public:
 
     return false;
   }
-  node *findSet(D data) { return findSet(this->nodes[data]); }
+  void unionSet(node *parent1, node *parent2) {
+    if (parent1->rank >= parent2->rank) {
+      parent1->rank =
+          (parent1->rank == parent2->rank) ? parent1->rank + 1 : parent1->rank;
+      parent2->parent = parent1;
+    } else {
+      parent1->parent = parent2;
+    }
+  }
+  node *findSet(N data) { return findSet(this->nodes[data]); }
 
   node *findSet(node *vertex) {
     node *current = vertex;
