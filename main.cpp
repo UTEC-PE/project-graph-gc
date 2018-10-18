@@ -8,7 +8,6 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
 
-
   graph g(4, true);
   g.addVertex(13.0, 6.0);
   g.addVertex(22.0, 6.0);
@@ -51,8 +50,17 @@ int main(int argc, char *argv[]) {
   g2.bfs();
 
   Read<graph> readGraph("graph1.txt");
-  graph mygraph =readGraph.getGraph();
+  graph mygraph = readGraph.getGraph();
   mygraph.print();
 
+  mygraph.removeVertex(0);
+  mygraph.print();
+
+  Read<graph> readGraph2("graph2.txt");
+  graph mygraph2 = readGraph2.getGraph();
+  mygraph2.print();
+
+  mygraph2.removeVertex(0);
+  mygraph2.print();
   return 0;
 }

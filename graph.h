@@ -18,9 +18,9 @@
 using namespace std;
 
 class Traits {
-	public:
-		typedef int N;
-		typedef int E;
+public:
+  typedef int N;
+  typedef int E;
 };
 
 template <typename Tr> class Graph {
@@ -72,7 +72,6 @@ public:
   Graph(int number_of_vertices, bool directed)
       : nodes(), directed(directed), counter(0){};
 
-
   /* ***** MANIPULATION METHODS ***** */
 
   // Integer indexed method
@@ -123,7 +122,44 @@ public:
     }
   }
 
-  void removeVertex() {}
+  void removeVertex(N data) { removeVertex(this->nodes[data]); }
+  void removeVertex(node *&v) {
+    std::map<int, int> buffer;
+    for (auto &e : v->edges) {
+      // In theory buffer[value]++ will first check if key exists and if not,
+      // initialize it with 0 and then sum 1.
+      buffer[e->nodes[0]->data == v->data ? e->nodes[1]->data
+                                          : e->nodes[0]->data]++;
+      delete e;
+      e = nullptr;
+    }
+    if (this->directed) {
+      for (std::pair<int, int> vb : buffer) {
+
+        removeEmptyEdges(vb.first);
+      }
+    } else {
+      for (std::pair<int, int> vb : buffer) {
+        removeEdgeCoincidences(v->data, vb.first);
+      }
+    }
+    (this->nodes).erase(v->data);
+    delete v;
+  }
+  void removeEdgeCoincidences(N &data1, N &data2) {
+    (this->nodes)[data2]->edges.remove_if(
+        [&](edge *&e) -> bool { return e->remove_if_has(data1); });
+  }
+  void removeEmptyEdges(N &data) {
+    std::cout << "Removing empty edges\n";
+    (this->nodes)[data]->edges.remove_if([](edge *&e) -> bool {
+      bool null = e->nodes[0] == nullptr;
+      if (null) {
+        e = nullptr;
+      }
+      return (null);
+    });
+  }
   void removeEdge() {}
 
   /* ***** UTILITY METHODS ***** */
@@ -141,22 +177,29 @@ public:
   }
   inline bool isDirected() { return this->directed; }
   inline int lastNodeTag() { return this->counter; }
-
+  inline int size() { return (this->nodes).size(); }
   void print() {
-		std::cout << this->counter <<' ' << this->directed << "\n\n";
-		for (int i = 0; i < this->counter; i++) {
-			std::cout << (this->nodes)[i]->print() << '\n';
-		}
-		std::cout << '\n';
-		for (int i = 0; i < this->counter; i++) {
-			for (EdgeIte it = ((this->nodes)[i])->edges.begin(); it != (this->nodes)[i]->edges.end(); it++) {
-				std::cout << (*it)->printV1() << ' ';
-				std::cout << (*it)->printV2() << ' ';
-				std::cout << (*it)->printWeight() << ' ';
-				std::cout << (*it)->printDir() << '\n';
-			}
-		}
-	};
+    std::cout << this->size() << ' ' << this->directed << "\n\n";
+    for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+      std::cout << (*ni).second->print() << '\n';
+    }
+
+    std::cout << '\n';
+    for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+      for (EdgeIte it = (*ni).second->edges.begin();
+           it != (*ni).second->edges.end(); it++) {
+
+        if (*it) {
+          std::cout << (*it)->printV1() << ' ';
+          std::cout << (*it)->printV2() << ' ';
+          std::cout << (*it)->printWeight() << ' ';
+          std::cout << (*it)->printDir() << '\n';
+        } else {
+          std::cout << "nullptr\n";
+        }
+      }
+    }
+  };
 
   /* ***** ALGORITHMS  ***** */
 
@@ -273,7 +316,6 @@ public:
     }
     return A;
   }
-
 };
 
 typedef Graph<Traits> graph;

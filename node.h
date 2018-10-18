@@ -24,6 +24,11 @@ public:
     this->x = v->x;
     this->y = v->y;
   }
+  ~Node() {
+    std::cout << "Node " << (this->data) << " is being deleted...   ";
+    (this->edges).clear();
+    std::cout << "Done.\n";
+  }
   void addEdge(edge *e) {
     if ((e->nodes[0])->data == this->data) {
       (this->edges).push_front(e);
