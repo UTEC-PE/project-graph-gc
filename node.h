@@ -19,6 +19,11 @@ public:
   EdgeSeq edges;
 
   Node(N data, double x, double y) : data(data), x(x), y(y), edges() {}
+  Node(Node<G> *&v) {
+    this->data = v->data;
+    this->x = v->x;
+    this->y = v->y;
+  }
   void addEdge(edge *e) {
     if ((e->nodes[0])->data == this->data) {
       (this->edges).push_front(e);
@@ -26,7 +31,11 @@ public:
       (this->edges).push_back(e);
     }
   }
-  bool is(int node_tag) { return ((this->data) == node_tag); }
+  void addEdge(Node<G> *v, E data, bool dir) {
+    (this->edges).push_front(new edge(data, dir, this, v));
+  }
+  inline bool is(int node_tag) { return ((this->data) == node_tag); }
+  inline bool is(const Node<G> &v) { return ((this->data) == v.data); }
   bool in(std::vector<Node<G> *> v) {
     return std::find(v.begin(), v.end(), this) != v.end();
   }
@@ -36,7 +45,9 @@ public:
     os << v.data;
     return os;
   }
-  bool operator<(const Node<G> node) const { return this->data < node.data; }
+  inline bool operator<(const Node<G> node) const {
+    return this->data < node.data;
+  }
 };
 
 #endif

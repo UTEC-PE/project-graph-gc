@@ -33,7 +33,7 @@ public:
     return os;
   }
 
-  bool operator==(const Edge<G> edge) const {
+  inline bool operator==(const Edge<G> edge) const {
     return ((this->nodes) == edge.nodes);
   }
   inline bool operator<(const Edge<G> edge) const {

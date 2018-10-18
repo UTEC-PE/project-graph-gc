@@ -50,6 +50,8 @@ public:
 
   Graph() : nodes(), counter(0){};
 
+  Graph(bool directed) : nodes(), directed(directed), counter(0){};
+
   // Copy constructor to 1) copy vertices, edges or entire graph
   Graph(Graph<Tr> *g, char type_of_copy_constructor) {
     switch (type_of_copy_constructor) {
@@ -88,12 +90,29 @@ public:
     }
   }
 
+  void addVertex(node *v) {
+    (this->nodes)[v->data] = v;
+    (this->counter)++;
+  }
+
   void addEdge(N v1, N v2, E weight, bool dir) {
     node *vn1 = (this->nodes)[v1];
     node *vn2 = (this->nodes)[v2];
 
     edge *e1 = new edge(weight, dir, vn1, vn2);
 
+    if (dir) {
+      vn1->addEdge(e1);
+      vn2->addEdge(e1);
+    } else {
+      edge *e2 = new edge(weight, dir, vn2, vn1);
+      vn1->addEdge(e1);
+      vn2->addEdge(e2);
+    }
+  }
+
+  void addEdge(node *vn1, node *vn2, E weight, bool dir) {
+    edge *e1 = new edge(weight, dir, vn1, vn2);
     if (dir) {
       vn1->addEdge(e1);
       vn2->addEdge(e1);
@@ -121,42 +140,91 @@ public:
     // hope this doesn't pass the adjacency list by reference
     return this->nodes;
   }
-  bool isDirected() { return this->directed; }
-  int lastNodeTag() { return this->counter; }
+  inline bool isDirected() { return this->directed; }
+  inline int lastNodeTag() { return this->counter; }
 
   /* ***** ALGORITHMS  ***** */
 
-  void dfs(node *v = nullptr) {
+  self dfs(node *v = nullptr) {
     // If starting node is null, initialize starting node with first node in
     // graph
     if (!v) {
       v = (this->nodes)[0];
     }
 
-    self A(this, 'v');
+    self ST(this->directed);
 
     std::vector<node *> output;
     std::vector<node *> visited;
     std::stack<node *> nodes_stack;
     nodes_stack.push(v);
 
+    node *new_v = new node(v);
+    ST.addVertex(new_v);
+
     while (!(nodes_stack.empty())) {
       v = nodes_stack.top();
       nodes_stack.pop();
-
       if (!(v->in(visited))) {
-        std::cout << v->print() << " ";
         visited.push_back(v);
       }
 
       for (const auto &edge : v->edges) {
-        if (edge->nodes[0] == v && !(v->in(visited))) {
+
+        if (edge->nodes[0]->is(*v) && !(edge->nodes[1]->in(visited))) {
           nodes_stack.push(edge->nodes[1]);
+          new_v = new node(v);
+          ST.addVertex(new_v);
+          ST.nodes[v->data]->addEdge(new_v, edge->data, this->directed);
         }
       }
     }
+
+    for (auto &v : visited) {
+      std::cout << *v << ' ';
+    }
+    std::cout << "\n";
+    return ST;
   }
-  void bfs() {}
+  self bfs(node *v = nullptr) {
+    // If starting node is null, initialize starting node with first node in
+    // graph
+    if (!v) {
+      v = (this->nodes)[0];
+    }
+
+    self ST(this->directed);
+
+    std::vector<node *> visited;
+    std::queue<node *> nodes_queue;
+    nodes_queue.push(v);
+    visited.push_back(v);
+
+    node *new_v = new node(v);
+    ST.addVertex(new_v);
+
+    while (!(nodes_queue.empty())) {
+      v = nodes_queue.front();
+      nodes_queue.pop();
+
+      for (const auto &edge : v->edges) {
+        if (edge->nodes[0]->is(*v) && !(edge->nodes[1]->in(visited))) {
+
+          visited.push_back(edge->nodes[1]);
+          nodes_queue.push(edge->nodes[1]);
+          new_v = new node(edge->nodes[1]);
+          ST.addVertex(new_v);
+          ST.nodes[v->data]->addEdge(new_v, edge->data, this->directed);
+        }
+      }
+    }
+
+    for (auto &v : visited) {
+      std::cout << *v << ' ';
+    }
+    std::cout << "\n";
+    return ST;
+  }
 
   void prim() {}
 
