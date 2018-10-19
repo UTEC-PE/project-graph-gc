@@ -191,7 +191,7 @@ public:
       for (EdgeIte it = (*ni).second->edges.begin();
            it != (*ni).second->edges.end(); it++) {
 
-				if ((*ni).second->print()!=((*it)->printV2())) { //Se verifica q no se imprimas dobles por recordar el de llegada
+				if ((*ni).second->print()!=((*it)->printV2())) { //Se verifica q no se imprimas dobles por recordar de donde vino
 					if (*it) {
 	          std::cout << (*it)->printV1() << ' ';
 	          std::cout << (*it)->printV2() << ' ';
