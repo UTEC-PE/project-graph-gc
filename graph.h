@@ -337,6 +337,36 @@ public:
 		if (criteria < this->density()) return true;
 		else return false;
 	}
+
+	int nodeGrade(E tag) {
+		node *pnode = nodes[tag];
+		if (!this->isDirected()) {
+			int grade = 0;
+			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
+				grade++;
+			}
+			return grade;
+		}else{
+			int grade = 0;
+			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
+				grade++;
+			}
+			
+		}
+	}
+
+	bool isFontNode(node *v) {
+		if (!this->isDirected()) {
+			return false;
+		}
+
+	}
+
+	bool isSunkenNode(node *v){
+		if (!this->isDirected()) {
+			return false;
+		}
+	}
 };
 
 typedef Graph<Traits> graph;
