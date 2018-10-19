@@ -339,6 +339,75 @@ public:
 		if (criteria < this->density()) return true;
 		else return false;
 	}
+
+	int nodeGrade(E tag) {
+		if (!this->isDirected()) {
+			node *pnode = nodes[tag];
+			int grade = 0;
+			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
+				grade++;
+			}
+			return grade;
+		}else{
+			return this->nodeInGrade(tag) + this->nodeOutGrade(tag);
+		}
+	}
+
+	int nodeInGrade(E tag) {
+		if (!this->isDirected()) {
+			return this->nodeGrade(tag);
+		}else{
+			node *pnode = nodes[tag];
+			int grade = 0;
+			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
+				if ((*it)->printV2()==tag) {
+					grade++;
+				}
+			}
+			return grade;
+		}
+	}
+
+	int nodeOutGrade(E tag) {
+		if (!this->isDirected()) {
+			return this->nodeGrade(tag);
+		}else{
+			node *pnode = nodes[tag];
+			int grade = 0;
+			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
+				if ((*it)->printV1()==tag) {
+					grade++;
+				}
+			}
+			return grade;
+		}
+	}
+
+	bool isFontNode(E tag) {
+		if (!this->isDirected()) {
+			return false;
+		}
+		if (this->nodeOutGrade(tag) != 0 && this->nodeInGrade(tag) == 0) {
+			return true;
+		}else return false;
+	}
+
+	bool isSunkenNode(E tag){
+		if (!this->isDirected()) {
+			return false;
+		}
+		if (this->nodeOutGrade(tag) == 0 && this->nodeInGrade(tag) != 0) {
+			return true;
+		}else return false;
+	}
+
+	void nodeInfo(E tag) {
+		std::cout << "Grado: " << this->nodeGrade(tag) << '\n';
+		std::cout << "Grado de entrada: " << this->nodeInGrade(tag) << '\n';
+		std::cout << "Grado de salida: " << this->nodeOutGrade(tag) << '\n';
+		std::cout << "Nodo hundido: " << this->isSunkenNode(tag) << '\n';
+		std::cout << "Nodo fuente: " << this->isFontNode(tag) << '\n';
+	}
 };
 
 typedef Graph<Traits> graph;
