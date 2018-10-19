@@ -62,5 +62,9 @@ int main(int argc, char *argv[]) {
 
   mygraph2.removeVertex(0);
   mygraph2.print();
+
+  std::cout << mygraph.density() << '\n';
+  std::cout << mygraph.isDense() << '\n';
+
   return 0;
 }
