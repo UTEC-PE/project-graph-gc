@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   mygraph2.removeVertex(0);
   mygraph2.print();
 
-  mygraph2.nodeInfo(1);
+  std::cout << mygraph2.isStronglyConnected() << '\n';
 
   return 0;
 }

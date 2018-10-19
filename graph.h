@@ -211,7 +211,7 @@ public:
     // If starting node is null, initialize starting node with first node in
     // graph
     if (!v) {
-      v = (this->nodes)[0];
+      v = (*((this->nodes).begin())).second;
     }
 
     self ST(this->directed);
@@ -256,7 +256,7 @@ public:
     // If starting node is null, initialize starting node with first node in
     // graph
     if (!v) {
-      v = (this->nodes)[0];
+      v = (*((this->nodes).begin())).second;
     }
 
     self ST(this->directed);
@@ -407,6 +407,31 @@ public:
 		std::cout << "Grado de salida: " << this->nodeOutGrade(tag) << '\n';
 		std::cout << "Nodo hundido: " << this->isSunkenNode(tag) << '\n';
 		std::cout << "Nodo fuente: " << this->isFontNode(tag) << '\n';
+	}
+
+	bool isConnected() {
+		if (this->isDirected()) {
+			return false;
+		} else {
+			self dfsGraph = this->dfs();
+			if (this->size()==dfsGraph.size()) {
+				return true;
+			} else return false;
+		}
+	}
+
+	bool isStronglyConnected() {
+		if (!this->isDirected()) {
+			return false;
+		}else{
+			for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+				self dfsGraph = this->dfs((*ni).second);
+				if (this->size()!=dfsGraph.size()) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 };
 
