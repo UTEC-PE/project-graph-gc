@@ -322,6 +322,21 @@ public:
     }
     return A;
   }
+
+	float density() {
+		float numberEdges = 0;
+		for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+			for (EdgeIte it = (*ni).second->edges.begin(); it != (*ni).second->edges.end(); it++) {
+				numberEdges++;
+			}
+		}
+		return ((numberEdges)/(this->size()*(this->size()-1)));
+	}
+
+	bool isDense(float criteria = 0.6) {
+		if (criteria < this->density()) return true;
+		else return false;
+	}
 };
 
 typedef Graph<Traits> graph;
