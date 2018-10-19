@@ -233,9 +233,13 @@ public:
 
         if (edge->nodes[0]->is(*v) && !(edge->nodes[1]->in(visited))) {
           nodes_stack.push(edge->nodes[1]);
-          new_v = new node(v);
-          ST.addVertex(new_v);
-          ST.nodes[v->data]->addEdge(new_v, edge->data, this->directed);
+          std::cout << "creating node " << *(edge->nodes[1]) << std::endl;
+
+          if (!(ST.nodes[edge->nodes[1]->data])) {
+            new_v = new node(edge->nodes[1]);
+            ST.addVertex(new_v);
+            ST.nodes[v->data]->addEdge(new_v, edge->data, this->directed);
+          }
         }
       }
     }

@@ -2,6 +2,7 @@
 #define NODE_H
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 template <typename G> class Node {
@@ -41,6 +42,7 @@ public:
   }
   inline bool is(int node_tag) { return ((this->data) == node_tag); }
   inline bool is(const Node<G> &v) { return ((this->data) == v.data); }
+
   bool in(std::vector<Node<G> *> v) {
     return std::find(v.begin(), v.end(), this) != v.end();
   }
@@ -49,6 +51,9 @@ public:
   friend std::ostream &operator<<(std::ostream &os, const Node<G> &v) {
     os << v.data;
     return os;
+  }
+  inline bool operator==(const Node<G> node) const {
+    return this->data == node.data;
   }
   inline bool operator<(const Node<G> node) const {
     return this->data < node.data;

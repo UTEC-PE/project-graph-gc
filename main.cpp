@@ -1,4 +1,4 @@
-#include <GL/glut.h>
+//#include <GL/glut.h>
 #include <iostream>
 
 #include "graph.h"
@@ -7,7 +7,6 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-
   graph g(4, true);
   g.addVertex(13.0, 6.0);
   g.addVertex(22.0, 6.0);
@@ -36,7 +35,6 @@ int main(int argc, char *argv[]) {
   g2.addVertex(62.0, 8.0);
   g2.addVertex(22.0, 3.0);
   g2.addVertex(41.0, 2.0);
-
   g2.addVertex(41.0, 2.0);
 
   g2.addEdge(0, 1, 1, 0);
@@ -44,19 +42,27 @@ int main(int argc, char *argv[]) {
   g2.addEdge(0, 2, 4, 0);
   g2.addEdge(2, 4, 5, 0);
   g2.addEdge(1, 5, 2, 0);
+  g2.addEdge(1, 2, 2, 0);
   g2.addEdge(3, 2, 5, 0);
+  g2.addEdge(3, 4, 5, 0);
   g2.addEdge(5, 6, 5, 0);
+
+  std::cout << "g2\n";
+  g2.print();
   graph g2dfs = g2.dfs();
 
   // TODO: fix return graph in bfs and dfs
-  std::cout << "g2\n";
-  g2.print();
-  std::cout << "g2 bfs\n";
+  //
+  std::cout << "g2 dfs\n";
 
   g2dfs.print();
 
-  g2.bfs();
+  std::cout << "finish\n";
+  std::cout << "g2 bfs\n";
+  graph g2bfs = g2.bfs();
 
+  g2bfs.print();
+  std::cout << "finish\n";
   Read<graph> readGraph("graph1.txt");
   graph mygraph = readGraph.getGraph();
   mygraph.print();
