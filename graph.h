@@ -160,7 +160,9 @@ public:
       return (null);
     });
   }
-  void removeEdge() {}
+  void removeEdge() {
+    // TODO: @dgcnz
+  }
 
   /* ***** UTILITY METHODS ***** */
 

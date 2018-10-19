@@ -46,7 +46,15 @@ int main(int argc, char *argv[]) {
   g2.addEdge(1, 5, 2, 0);
   g2.addEdge(3, 2, 5, 0);
   g2.addEdge(5, 6, 5, 0);
-  g2.dfs();
+  graph g2dfs = g2.dfs();
+
+  // TODO: fix return graph in bfs and dfs
+  std::cout << "g2\n";
+  g2.print();
+  std::cout << "g2 bfs\n";
+
+  g2dfs.print();
+
   g2.bfs();
 
   Read<graph> readGraph("graph1.txt");
