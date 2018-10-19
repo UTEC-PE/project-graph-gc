@@ -433,6 +433,64 @@ public:
 			return true;
 		}
 	}
+
+	bool isBipartite(){
+		typedef map<E, bool> coloredMap;
+		coloredMap redBlueMap;
+		queue <node *> unColored;
+		redBlueMap[(*((this->nodes).begin())).first]=true;
+		for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+			if (redBlueMap.find((*ni).first)!=redBlueMap.end()) {
+				bool color = !((*((redBlueMap.find((*ni).first)))).second);
+				for (EdgeIte it = (*ni).second->edges.begin();it != (*ni).second->edges.end(); it++) {
+					if ((*ni).first == (*it)->printV1()) {
+						if (redBlueMap.find((*it)->printV2())!=redBlueMap.end()) {
+							if (redBlueMap[(*it)->printV2()]!=color) {
+								return false;
+							}
+						}else{
+							redBlueMap[(*it)->printV2()]=color;
+						}
+					}
+				}
+			}else{
+				unColored.push((*ni).second);
+			}
+		}
+		while (!unColored.empty()) {
+			if (redBlueMap.find((unColored.front())->print())!=redBlueMap.end()) {
+				bool color = !(redBlueMap[(unColored.front())->print()]);
+				for (EdgeIte it = (unColored.front())->edges.begin();it != (unColored.front())->edges.end(); it++) {
+					if (unColored.front()->print() == (*it)->printV1()) {
+						if (redBlueMap.find((*it)->printV2())!=redBlueMap.end()) {
+							if (redBlueMap[(*it)->printV2()]!=color) {
+								return false;
+							}
+						}else{
+							redBlueMap[(*it)->printV2()]=color;
+						}
+					}
+				}
+				unColored.pop();
+			}else{
+				redBlueMap[(unColored.front())->print()]=true;
+				bool color = !(redBlueMap[(unColored.front())->print()]);
+				for (EdgeIte it = (unColored.front())->edges.begin();it != (unColored.front())->edges.end(); it++) {
+					if ((unColored.front())->print() == (*it)->printV1()) {
+						if (redBlueMap.find((*it)->printV2())!=redBlueMap.end()) {
+							if (redBlueMap[(*it)->printV2()]!=color) {
+								return false;
+							}
+						}else{
+							redBlueMap[(*it)->printV2()]=color;
+						}
+					}
+				}
+				unColored.pop();
+			}
+		}
+		return true;
+	}
 };
 
 typedef Graph<Traits> graph;

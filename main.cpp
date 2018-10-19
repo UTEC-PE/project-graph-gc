@@ -77,7 +77,8 @@ int main(int argc, char *argv[]) {
   mygraph2.removeVertex(0);
   mygraph2.print();
 
-  std::cout << mygraph2.isStronglyConnected() << '\n';
+  std::cout << mygraph2.isConnected() << '\n';
+  std::cout << mygraph2.isBipartite() << '\n';
 
   return 0;
 }
