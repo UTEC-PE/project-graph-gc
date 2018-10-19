@@ -80,5 +80,8 @@ int main(int argc, char *argv[]) {
   std::cout << mygraph2.isConnected() << '\n';
   std::cout << mygraph2.isBipartite() << '\n';
 
+  mygraph2.findNode(1);
+  mygraph2.findEdge(1,3);
+
   return 0;
 }

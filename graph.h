@@ -340,7 +340,7 @@ public:
 		else return false;
 	}
 
-	int nodeGrade(E tag) {
+	int nodeGrade(N tag) {
 		if (!this->isDirected()) {
 			node *pnode = nodes[tag];
 			int grade = 0;
@@ -353,7 +353,7 @@ public:
 		}
 	}
 
-	int nodeInGrade(E tag) {
+	int nodeInGrade(N tag) {
 		if (!this->isDirected()) {
 			return this->nodeGrade(tag);
 		}else{
@@ -368,7 +368,7 @@ public:
 		}
 	}
 
-	int nodeOutGrade(E tag) {
+	int nodeOutGrade(N tag) {
 		if (!this->isDirected()) {
 			return this->nodeGrade(tag);
 		}else{
@@ -383,7 +383,7 @@ public:
 		}
 	}
 
-	bool isFontNode(E tag) {
+	bool isFontNode(N tag) {
 		if (!this->isDirected()) {
 			return false;
 		}
@@ -392,7 +392,7 @@ public:
 		}else return false;
 	}
 
-	bool isSunkenNode(E tag){
+	bool isSunkenNode(N tag){
 		if (!this->isDirected()) {
 			return false;
 		}
@@ -490,6 +490,22 @@ public:
 			}
 		}
 		return true;
+	}
+
+	node* findNode(N tag) {
+		if (nodes.find(tag)!=nodes.end()) {
+			return nodes[tag];
+		} else return nullptr;
+	}
+
+	edge* findEdge(N v1, N v2) {
+		if (nodes.find(v1)!=nodes.end()) {
+			for (EdgeIte it = nodes[v1]->edges.begin(); it != nodes[v1]->edges.end(); it++) {
+				if ((*it)->printV1()==v1 && (*it)->printV2()==v2) {
+					return (*it);
+				}
+			}
+		} else return nullptr;
 	}
 };
 
