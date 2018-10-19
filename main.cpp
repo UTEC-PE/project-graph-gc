@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   mygraph2.removeVertex(0);
   mygraph2.print();
 
-  std::cout << mygraph.nodeGrade(1) << '\n';
+  mygraph2.nodeInfo(1);
 
   return 0;
 }
