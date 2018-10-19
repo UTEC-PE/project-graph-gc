@@ -82,6 +82,8 @@ int main(int argc, char *argv[]) {
 
   mygraph2.findNode(1);
   mygraph2.findEdge(1,3);
+  mygraph2.removeEdge(1,3);
+  mygraph2.print();
 
   return 0;
 }

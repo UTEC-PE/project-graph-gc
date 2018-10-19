@@ -160,8 +160,14 @@ public:
       return (null);
     });
   }
-  void removeEdge() {
-    // TODO: @dgcnz
+  void removeEdge(N v1, N v2) {
+    if (!this->isDirected()) {
+      removeEdgeCoincidences(v1,v2);
+      removeEdgeCoincidences(v2,v1);
+    }else{
+      removeEdgeCoincidences(v1,v2);
+      removeEmptyEdges(v1);
+    }
   }
 
   /* ***** UTILITY METHODS ***** */
