@@ -72,6 +72,13 @@ public:
   Graph(int number_of_vertices, bool directed)
       : nodes(), directed(directed), counter(0){};
 
+  ~Graph() {
+    for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+      removeVertex((*ni).second);
+    }
+    std::cout << "Graph deleted" << '\n';
+  }
+
   /* ***** MANIPULATION METHODS ***** */
 
   // Integer indexed method
