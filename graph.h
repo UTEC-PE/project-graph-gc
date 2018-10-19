@@ -191,14 +191,16 @@ public:
       for (EdgeIte it = (*ni).second->edges.begin();
            it != (*ni).second->edges.end(); it++) {
 
-        if (*it) {
-          std::cout << (*it)->printV1() << ' ';
-          std::cout << (*it)->printV2() << ' ';
-          std::cout << (*it)->printWeight() << ' ';
-          std::cout << (*it)->printDir() << '\n';
-        } else {
-          std::cout << "nullptr\n";
-        }
+				if ((*ni).second->print()!=((*it)->printV2())) { //Se verifica q no se imprimas dobles por recordar el de llegada
+					if (*it) {
+	          std::cout << (*it)->printV1() << ' ';
+	          std::cout << (*it)->printV2() << ' ';
+	          std::cout << (*it)->printWeight() << ' ';
+	          std::cout << (*it)->printDir() << '\n';
+	        } else {
+	          std::cout << "nullptr\n";
+	        }
+				}
       }
     }
   };
