@@ -72,6 +72,13 @@ public:
   Graph(int number_of_vertices, bool directed)
       : nodes(), directed(directed), counter(0){};
 
+  ~Graph() {
+    for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+      removeVertex((*ni).second);
+    }
+    std::cout << "Graph deleted" << '\n';
+  }
+
   /* ***** MANIPULATION METHODS ***** */
 
   // Integer indexed method
@@ -160,8 +167,14 @@ public:
       return (null);
     });
   }
-  void removeEdge() {
-    // TODO: @dgcnz
+  void removeEdge(N v1, N v2) {
+    if (!this->isDirected()) {
+      removeEdgeCoincidences(v1,v2);
+      removeEdgeCoincidences(v2,v1);
+    }else{
+      removeEdgeCoincidences(v1,v2);
+      removeEmptyEdges(v1);
+    }
   }
 
   /* ***** UTILITY METHODS ***** */
@@ -191,14 +204,16 @@ public:
       for (EdgeIte it = (*ni).second->edges.begin();
            it != (*ni).second->edges.end(); it++) {
 
-        if (*it) {
-          std::cout << (*it)->printV1() << ' ';
-          std::cout << (*it)->printV2() << ' ';
-          std::cout << (*it)->printWeight() << ' ';
-          std::cout << (*it)->printDir() << '\n';
-        } else {
-          std::cout << "nullptr\n";
-        }
+				if ((*ni).second->print()!=((*it)->printV2())) { //Se verifica q no se imprimas dobles por recordar de donde vino
+					if (*it) {
+	          std::cout << (*it)->printV1() << ' ';
+	          std::cout << (*it)->printV2() << ' ';
+	          std::cout << (*it)->printWeight() << ' ';
+	          std::cout << (*it)->printDir() << '\n';
+	        } else {
+	          std::cout << "nullptr\n";
+	        }
+				}
       }
     }
   };
@@ -210,6 +225,7 @@ public:
     // graph
     if (!v) {
       v = (this->nodes).begin()->second;
+
     }
 
     self ST(this->directed);
@@ -254,6 +270,7 @@ public:
     // graph
     if (!v) {
       v = (this->nodes).begin()->second;
+
     }
 
     self ST(this->directed);
@@ -362,6 +379,189 @@ public:
     }
     return MST;
   }
+
+	float density() {
+		float numberEdges = 0;
+		for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+			for (EdgeIte it = (*ni).second->edges.begin(); it != (*ni).second->edges.end(); it++) {
+				numberEdges++;
+			}
+		}
+		return ((numberEdges)/(this->size()*(this->size()-1)));
+	}
+
+	bool isDense(float criteria = 0.6) {
+		if (criteria < this->density()) return true;
+		else return false;
+	}
+
+	int nodeGrade(N tag) {
+		if (!this->isDirected()) {
+			node *pnode = nodes[tag];
+			int grade = 0;
+			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
+				grade++;
+			}
+			return grade;
+		}else{
+			return this->nodeInGrade(tag) + this->nodeOutGrade(tag);
+		}
+	}
+
+	int nodeInGrade(N tag) {
+		if (!this->isDirected()) {
+			return this->nodeGrade(tag);
+		}else{
+			node *pnode = nodes[tag];
+			int grade = 0;
+			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
+				if ((*it)->printV2()==tag) {
+					grade++;
+				}
+			}
+			return grade;
+		}
+	}
+
+	int nodeOutGrade(N tag) {
+		if (!this->isDirected()) {
+			return this->nodeGrade(tag);
+		}else{
+			node *pnode = nodes[tag];
+			int grade = 0;
+			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
+				if ((*it)->printV1()==tag) {
+					grade++;
+				}
+			}
+			return grade;
+		}
+	}
+
+	bool isFontNode(N tag) {
+		if (!this->isDirected()) {
+			return false;
+		}
+		if (this->nodeOutGrade(tag) != 0 && this->nodeInGrade(tag) == 0) {
+			return true;
+		}else return false;
+	}
+
+	bool isSunkenNode(N tag){
+		if (!this->isDirected()) {
+			return false;
+		}
+		if (this->nodeOutGrade(tag) == 0 && this->nodeInGrade(tag) != 0) {
+			return true;
+		}else return false;
+	}
+
+	void nodeInfo(E tag) {
+		std::cout << "Grado: " << this->nodeGrade(tag) << '\n';
+		std::cout << "Grado de entrada: " << this->nodeInGrade(tag) << '\n';
+		std::cout << "Grado de salida: " << this->nodeOutGrade(tag) << '\n';
+		std::cout << "Nodo hundido: " << this->isSunkenNode(tag) << '\n';
+		std::cout << "Nodo fuente: " << this->isFontNode(tag) << '\n';
+	}
+
+	bool isConnected() {
+		if (this->isDirected()) {
+			return false;
+		} else {
+			self dfsGraph = this->dfs();
+			if (this->size()==dfsGraph.size()) {
+				return true;
+			} else return false;
+		}
+	}
+
+	bool isStronglyConnected() {
+		if (!this->isDirected()) {
+			return false;
+		}else{
+			for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+				self dfsGraph = this->dfs((*ni).second);
+				if (this->size()!=dfsGraph.size()) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+
+	bool isBipartite(){
+		typedef map<E, bool> coloredMap;
+		coloredMap redBlueMap;
+		queue <node *> unColored;
+		redBlueMap[(*((this->nodes).begin())).first]=true;
+		for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+			if (redBlueMap.find((*ni).first)!=redBlueMap.end()) {
+				bool color = !((*((redBlueMap.find((*ni).first)))).second);
+				for (EdgeIte it = (*ni).second->edges.begin();it != (*ni).second->edges.end(); it++) {
+					if ((*ni).first == (*it)->printV1()) {
+						if (redBlueMap.find((*it)->printV2())!=redBlueMap.end()) {
+							if (redBlueMap[(*it)->printV2()]!=color) {
+								return false;
+							}
+						}else{
+							redBlueMap[(*it)->printV2()]=color;
+						}
+					}
+				}
+			}else{
+				unColored.push((*ni).second);
+			}
+		}
+		while (!unColored.empty()) {
+			if (redBlueMap.find((unColored.front())->print())!=redBlueMap.end()) {
+				bool color = !(redBlueMap[(unColored.front())->print()]);
+				for (EdgeIte it = (unColored.front())->edges.begin();it != (unColored.front())->edges.end(); it++) {
+					if (unColored.front()->print() == (*it)->printV1()) {
+						if (redBlueMap.find((*it)->printV2())!=redBlueMap.end()) {
+							if (redBlueMap[(*it)->printV2()]!=color) {
+								return false;
+							}
+						}else{
+							redBlueMap[(*it)->printV2()]=color;
+						}
+					}
+				}
+				unColored.pop();
+			}else{
+				redBlueMap[(unColored.front())->print()]=true;
+				bool color = !(redBlueMap[(unColored.front())->print()]);
+				for (EdgeIte it = (unColored.front())->edges.begin();it != (unColored.front())->edges.end(); it++) {
+					if ((unColored.front())->print() == (*it)->printV1()) {
+						if (redBlueMap.find((*it)->printV2())!=redBlueMap.end()) {
+							if (redBlueMap[(*it)->printV2()]!=color) {
+								return false;
+							}
+						}else{
+							redBlueMap[(*it)->printV2()]=color;
+						}
+					}
+				}
+				unColored.pop();
+			}
+		}
+		return true;
+	}
+
+	node* findNode(N tag) {
+		if (nodes.find(tag)!=nodes.end()) {
+			return nodes[tag];
+		} else return nullptr;
+	}
+
+	edge* findEdge(N v1, N v2) {
+		if (nodes.find(v1)!=nodes.end()) {
+			for (EdgeIte it = nodes[v1]->edges.begin(); it != nodes[v1]->edges.end(); it++) {
+				if ((*it)->printV1()==v1 && (*it)->printV2()==v2) {
+					return (*it);
+				}
+			}
+		} else return nullptr;
+	}
 };
 
 typedef Graph<Traits> graph;

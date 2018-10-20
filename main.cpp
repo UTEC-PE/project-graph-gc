@@ -29,5 +29,39 @@ int main(int argc, char *argv[]) {
   std::cout << "g2\n";
   g2.print();
   g2.prim(2);
+  graph g2dfs = g2.dfs();
+
+  std::cout << "g2 dfs\n";
+
+  g2dfs.print();
+
+  std::cout << "finish\n";
+  std::cout << "g2 bfs\n";
+  graph g2bfs = g2.bfs();
+
+  g2bfs.print();
+  std::cout << "finish\n";
+  Read<graph> readGraph("graph1.txt");
+  graph mygraph = readGraph.getGraph();
+  mygraph.print();
+
+  mygraph.removeVertex(0);
+  mygraph.print();
+
+  Read<graph> readGraph2("graph2.txt");
+  graph mygraph2 = readGraph2.getGraph();
+  mygraph2.print();
+
+  mygraph2.removeVertex(0);
+  mygraph2.print();
+
+  std::cout << mygraph2.isConnected() << '\n';
+  std::cout << mygraph2.isBipartite() << '\n';
+
+  mygraph2.findNode(1);
+  mygraph2.findEdge(1,3);
+  mygraph2.removeEdge(1,3);
+  mygraph2.print();
+
   return 0;
 }
