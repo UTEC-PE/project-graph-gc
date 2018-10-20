@@ -224,7 +224,8 @@ public:
     // If starting node is null, initialize starting node with first node in
     // graph
     if (!v) {
-      v = (*((this->nodes).begin())).second;
+      v = (this->nodes).begin()->second;
+
     }
 
     self ST(this->directed);
@@ -248,7 +249,6 @@ public:
 
         if (edge->nodes[0]->is(*v) && !(edge->nodes[1]->in(visited))) {
           nodes_stack.push(edge->nodes[1]);
-          std::cout << "creating node " << *(edge->nodes[1]) << std::endl;
 
           if (!(ST.nodes[edge->nodes[1]->data])) {
             new_v = new node(edge->nodes[1]);
@@ -269,7 +269,8 @@ public:
     // If starting node is null, initialize starting node with first node in
     // graph
     if (!v) {
-      v = (*((this->nodes).begin())).second;
+      v = (this->nodes).begin()->second;
+
     }
 
     self ST(this->directed);
@@ -305,9 +306,50 @@ public:
     return ST;
   }
 
-  void prim() {}
+  self prim(N startpos = -1) {
+    // check if graph is connected
+    self MST(this->directed, 'v');
+    std::map<int, node *> parent;
+    node *start = nullptr;
+    if (startpos == -1) {
+      start = ((this->nodes).begin()->second);
+    } else {
+      if (this->nodes[startpos]) {
+        start = (this->nodes[startpos]);
+      }
+    }
+
+    PriorityQueue<self> Q(this->nodes, start);
+    // Q.print();
+    parent[start->data] = nullptr;
+    node *u = nullptr;
+
+    while (Q.heap_size != 0) {
+
+      u = Q.extractMin();
+      for (auto &e : this->nodes[u->data]->edges) {
+
+        if (Q.has(e->nodes[1]) && e->data < Q.weight(e->nodes[1])) {
+
+          parent[e->nodes[1]->data] = u;
+          Q.updateWeight(e->nodes[1], e->data);
+        }
+      }
+    }
+    for (std::pair<int, node *> p : parent) {
+      if (p.second) {
+
+        std::cout << "parent of " << p.first << " is " << p.second->data
+                  << "\n";
+      } else {
+        std::cout << "parent of " << p.first << " is "
+                  << "self\n";
+      }
+    }
+    return MST;
+  }
   self *kruskal() {
-    self A(this, 'v');
+    self MST(this, 'v');
     DisjointSet<self> DS;
     std::set<edge, non_dec_unique<edge>> GE;
 
@@ -331,11 +373,11 @@ public:
       node *parent2 = findSet(e->nodes[1]);
 
       if (parent1 != parent2) {
-        A[(e->nodes[0])->data].addEdge(e);
+        MST[(e->nodes[0])->data].addEdge(e);
         DS.unionSet(parent1, parent2);
       }
     }
-    return A;
+    return MST;
   }
 
 	float density() {

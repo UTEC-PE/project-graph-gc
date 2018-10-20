@@ -20,7 +20,7 @@ public:
   EdgeSeq edges;
 
   Node(N data, double x, double y) : data(data), x(x), y(y), edges() {}
-  Node(Node<G> *&v) {
+  Node(Node<G> *&v) : edges() {
     this->data = v->data;
     this->x = v->x;
     this->y = v->y;

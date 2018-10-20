@@ -7,27 +7,6 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-  graph g(4, true);
-  g.addVertex(13.0, 6.0);
-  g.addVertex(22.0, 6.0);
-  g.addVertex(23.0, 2.0);
-  g.addVertex(62.0, 8.0);
-  g.addVertex(22.0, 3.0);
-  g.addVertex(41.0, 2.0);
-  g.addVertex(41.0, 2.0);
-
-  g.addEdge(0, 1, 1, 1);
-  g.addEdge(0, 3, 2, 1);
-  g.addEdge(0, 2, 4, 1);
-  g.addEdge(2, 4, 5, 1);
-  g.addEdge(1, 5, 2, 1);
-  g.addEdge(3, 2, 5, 1);
-
-  g.addEdge(6, 5, 5, 1);
-  g.dfs();
-
-  g.bfs();
-
   graph g2(4, false);
   g2.addVertex(13.0, 6.0);
   g2.addVertex(22.0, 6.0);
@@ -38,21 +17,20 @@ int main(int argc, char *argv[]) {
   g2.addVertex(41.0, 2.0);
 
   g2.addEdge(0, 1, 1, 0);
-  g2.addEdge(0, 3, 2, 0);
+  g2.addEdge(0, 3, 8, 0);
   g2.addEdge(0, 2, 4, 0);
-  g2.addEdge(2, 4, 5, 0);
+  g2.addEdge(2, 4, 7, 0);
   g2.addEdge(1, 5, 2, 0);
   g2.addEdge(1, 2, 2, 0);
   g2.addEdge(3, 2, 5, 0);
-  g2.addEdge(3, 4, 5, 0);
+  g2.addEdge(3, 4, 1, 0);
   g2.addEdge(5, 6, 5, 0);
 
   std::cout << "g2\n";
   g2.print();
+  g2.prim(2);
   graph g2dfs = g2.dfs();
 
-  // TODO: fix return graph in bfs and dfs
-  //
   std::cout << "g2 dfs\n";
 
   g2dfs.print();
