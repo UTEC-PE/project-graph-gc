@@ -2,6 +2,8 @@
 #define GRAPH_H
 
 #include <algorithm>
+#include <deque>
+#include <exception>
 #include <iostream>
 #include <iterator>
 #include <list>
@@ -31,10 +33,12 @@ public:
   typedef Graph<Tr> self;
   typedef Node<self> node;
   typedef Edge<self> edge;
-  typedef map<N, node *> NodeSeq;
-  typedef list<edge *> EdgeSeq;
+  typedef map<N, std::shared_ptr<node>> NodeSeq;
+  typedef vector<std::weak_ptr<edge>> wEdgeSeq;
+  typedef vector<std::shared_ptr<edge>> EdgeSeq;
   typedef typename NodeSeq::iterator NodeIte;
   typedef typename EdgeSeq::iterator EdgeIte;
+  typedef typename wEdgeSeq::iterator wEdgeIte;
 
 private:
   NodeSeq nodes;
@@ -55,7 +59,7 @@ public:
   Graph(Graph<Tr> *g, char type_of_copy_constructor) {
     switch (type_of_copy_constructor) {
     case 'v':
-      this->nodes = g->vertices();
+      this->nodes = g->getVertices();
       this->directed = g->isDirected();
       this->counter = g->lastNodeTag();
       break;
@@ -69,12 +73,15 @@ public:
       break;
     }
   }
-  Graph(int number_of_vertices, bool directed)
+  Graph(int numberOfVertices, bool directed)
       : nodes(), directed(directed), counter(0){};
 
   ~Graph() {
-    for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
-      removeVertex((*ni).second);
+    std::cout << "number of vertices: " << this->nodes.size() << "\n";
+    for (auto &v : this->nodes) {
+      this->rawPrint();
+      std::cout << "removing vertex " << *(v.second) << std::endl;
+      this->removeVertex(v.second);
     }
     std::cout << "Graph deleted" << '\n';
   }
@@ -83,103 +90,125 @@ public:
 
   // Integer indexed method
   void addVertex(double x, double y) {
-    (this->nodes)[this->counter] = new node(this->counter, x, y);
+    (this->nodes)[this->counter] = std::make_shared<node>(this->counter, x, y);
     (this->counter)++;
   }
 
   void addVertex(N data, double x, double y) {
-    if ((this->nodes).find(data) == (this->nodes).end()) {
-      (this->nodes)[data] = new node(data, x, y);
+    if (!(this->nodes)[data]) {
+      (this->nodes)[data] = std::make_shared<node>(data, x, y);
       (this->counter)++;
     } else {
-      cout << "you're trying to override a node" << endl;
+      throw "Illegal node overriding.";
     }
   }
-
   void addVertex(node *v) {
-    (this->nodes)[v->data] = v;
+    (this->nodes)[v->data] = std::make_shared<node>(v->data, v->x, v->y);
     (this->counter)++;
   }
-
   void addEdge(N v1, N v2, E weight, bool dir) {
-    node *vn1 = (this->nodes)[v1];
-    node *vn2 = (this->nodes)[v2];
-
-    edge *e1 = new edge(weight, dir, vn1, vn2);
-
-    if (dir) {
-      vn1->addEdge(e1);
-      vn2->addEdge(e1);
-    } else {
-      edge *e2 = new edge(weight, dir, vn2, vn1);
-      vn1->addEdge(e1);
-      vn2->addEdge(e2);
-    }
+    this->addEdge((this->nodes)[v1], (this->nodes)[v2], weight, dir);
   }
 
-  void addEdge(node *vn1, node *vn2, E weight, bool dir) {
-    edge *e1 = new edge(weight, dir, vn1, vn2);
+  void addEdge(std::shared_ptr<node> &vn1, std::shared_ptr<node> &vn2, E weight,
+               bool dir) {
+
+    auto edgeFromTo = std::make_shared<edge>(weight, dir, vn1, vn2);
+
     if (dir) {
-      vn1->addEdge(e1);
-      vn2->addEdge(e1);
+      vn1->addEdge(edgeFromTo);
+      vn2->addEdge(edgeFromTo);
+
     } else {
-      edge *e2 = new edge(weight, dir, vn2, vn1);
-      vn1->addEdge(e1);
-      vn2->addEdge(e2);
+      auto edgeToFrom = std::make_shared<edge>(weight, dir, vn2, vn1);
+      vn1->addEdge(edgeFromTo);
+      vn2->addEdge(edgeToFrom);
     }
   }
 
   void removeVertex(N data) { removeVertex(this->nodes[data]); }
-  void removeVertex(node *&v) {
-    std::map<int, int> buffer;
-    for (auto &e : v->edges) {
-      // In theory buffer[value]++ will first check if key exists and if not,
-      // initialize it with 0 and then sum 1.
-      buffer[e->nodes[0]->data == v->data ? e->nodes[1]->data
-                                          : e->nodes[0]->data]++;
-      delete e;
-      e = nullptr;
-    }
-    if (this->directed) {
-      for (std::pair<int, int> vb : buffer) {
+  void removeVertex(std::shared_ptr<node> &v) {
+    std::set<int> buffer;
 
-        removeEmptyEdges(vb.first);
+    for (auto &e : v->outEdges) {
+      buffer.insert(e->nodes[0]->data == v->data ? e->nodes[1]->data
+                                                 : e->nodes[0]->data);
+      e.reset();
+    }
+
+    if (this->isDirected()) {
+
+      for (auto &e : v->inEdges) {
+        buffer.insert((e.lock())->nodes[0]->data == v->data
+                          ? (e.lock())->nodes[1]->data
+                          : (e.lock())->nodes[0]->data);
+        e.reset();
       }
-    } else {
-      for (std::pair<int, int> vb : buffer) {
-        removeEdgeCoincidences(v->data, vb.first);
+    }
+    std::cout << "now removing edge siblings\n";
+    if (this->isDirected()) {
+
+      for (auto vb : buffer) {
+        removeExpiredEdges(vb);
       }
+    }
+    for (auto vb : buffer) {
+      removeEdgeCoincidences(vb, v->data);
     }
     (this->nodes).erase(v->data);
-    delete v;
+    std::cout << v->getData() << " use_count: " << v.use_count() << "\n";
+    v.reset();
   }
-  void removeEdgeCoincidences(N &data1, N &data2) {
-    (this->nodes)[data2]->edges.remove_if(
-        [&](edge *&e) -> bool { return e->remove_if_has(data1); });
+  void removeEdgeCoincidences(N &nodeFrom, N &nodeTo) {
+    std::cout << "called removeEdgeCoincidences\n";
+
+    auto tempVectorHolder = &((this->nodes)[nodeFrom]->outEdges);
+    tempVectorHolder->erase(
+        std::remove_if(tempVectorHolder->begin(), tempVectorHolder->end(),
+                       [&](std::shared_ptr<edge> &e) -> bool {
+                         return e->removeIfHas(nodeTo);
+                       }),
+        tempVectorHolder->end());
+
+    std::cout << "succesfully removed edge coincidences\n";
   }
-  void removeEmptyEdges(N &data) {
-    std::cout << "Removing empty edges\n";
-    (this->nodes)[data]->edges.remove_if([](edge *&e) -> bool {
-      bool null = e->nodes[0] == nullptr;
-      if (null) {
-        e = nullptr;
-      }
-      return (null);
-    });
+
+  void removeExpiredEdges(N data) {
+    auto tempVectorHolder = &((this->nodes)[data]->inEdges);
+    tempVectorHolder->erase(std::remove_if(tempVectorHolder->begin(),
+                                           tempVectorHolder->end(),
+                                           [](std::weak_ptr<edge> &e) -> bool {
+                                             if (e.expired()) {
+                                               std::cout << "expired edge\n";
+                                               e.reset();
+                                               return true;
+                                             }
+                                             return false;
+                                           }),
+                            tempVectorHolder->end());
   }
-  void removeEdge(N v1, N v2) {
-    if (!this->isDirected()) {
-      removeEdgeCoincidences(v1,v2);
-      removeEdgeCoincidences(v2,v1);
-    }else{
-      removeEdgeCoincidences(v1,v2);
-      removeEmptyEdges(v1);
+  void removeEdge(N nodeFrom, N nodeTo) {
+    if (this->directed) {
+      (this->nodes)[nodeFrom]->edges.remove_if(
+          [&](edge *&e) -> bool { return e->removeIfSame(nodeTo, nodeFrom); });
+
+      (this->nodes)[nodeTo]->edges.remove_if(
+          [&](edge *&e) -> bool { return e->removeIfSame(nodeTo, nodeFrom); });
+    } else {
+
+      (this->nodes)[nodeFrom]->edges.remove_if(
+          [&](edge *&e) -> bool { return e->removeIfSame(nodeTo, nodeFrom); });
+
+      (this->nodes)[nodeTo]->edges.remove_if(
+          [&](edge *&e) -> bool { return e->removeIfSame(nodeFrom, nodeTo); });
     }
   }
 
   /* ***** UTILITY METHODS ***** */
 
-  std::map<int, node *> vertices() {
+  inline void setDirected(bool direction) { this->directed = direction; }
+
+  std::map<int, node *> getVertices() {
     std::map<int, node *> vs;
     for (auto &v : this->nodes) {
       vs[v.second->data] = new node(v.second->data, v.second->x, v.second->y);
@@ -190,10 +219,10 @@ public:
     // hope this doesn't pass the adjacency list by reference
     return this->nodes;
   }
-  inline bool isDirected() { return this->directed; }
-  inline int lastNodeTag() { return this->counter; }
-  inline int size() { return (this->nodes).size(); }
-  void print() {
+  inline bool isDirected() const { return this->directed; }
+  inline int lastNodeTag() const { return this->counter; }
+  inline int size() const { return (this->nodes).size(); }
+  void print() const {
     std::cout << this->size() << ' ' << this->directed << "\n\n";
     for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
       std::cout << (*ni).second->print() << '\n';
@@ -201,31 +230,70 @@ public:
 
     std::cout << '\n';
     for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
-      for (EdgeIte it = (*ni).second->edges.begin();
-           it != (*ni).second->edges.end(); it++) {
+      for (EdgeIte it = (*ni).second->outEdges.begin();
+           it != (*ni).second->outEdges.end(); it++) {
 
-				if ((*ni).second->print()!=((*it)->printV2())) { //Se verifica q no se imprimas dobles por recordar de donde vino
-					if (*it) {
-	          std::cout << (*it)->printV1() << ' ';
-	          std::cout << (*it)->printV2() << ' ';
-	          std::cout << (*it)->printWeight() << ' ';
-	          std::cout << (*it)->printDir() << '\n';
-	        } else {
-	          std::cout << "nullptr\n";
-	        }
-				}
+        if ((*ni).second->print() !=
+            ((*it)->printV2())) { // Se verifica q no se imprimas dobles por
+                                  // recordar de donde vino
+          if (*it) {
+            std::cout << (*it)->printV1() << ' ';
+            std::cout << (*it)->printV2() << ' ';
+            std::cout << (*it)->printWeight() << ' ';
+            std::cout << (*it)->printDir() << '\n';
+          } else {
+            std::cout << "nullptr\n";
+          }
+        }
+      }
+
+      for (wEdgeIte it = (*ni).second->inEdges.begin();
+           it != (*ni).second->inEdges.end(); it++) {
+
+        if ((*ni).second->print() !=
+            ((*it)->printV2())) { // Se verifica q no se imprimas dobles por
+                                  // recordar de donde vino
+          if (*it) {
+            std::cout << (*it)->printV1() << ' ';
+            std::cout << (*it)->printV2() << ' ';
+            std::cout << (*it)->printWeight() << ' ';
+            std::cout << (*it)->printDir() << '\n';
+          } else {
+            std::cout << "nullptr\n";
+          }
+        }
       }
     }
-  };
+  }
+
+  void rawPrint() const {
+    std::cout << "\n\n********** PRINTING NODES ***********\n\n";
+    if (this->isDirected()) {
+      std::cout << "graph: directed\n\n";
+    } else {
+      std::cout << "graph: non-directed\n\n";
+    }
+    for (auto &v : this->nodes) {
+      std::cout << *(v.second) << " : ";
+      for (auto &e : v.second->outEdges) {
+        std::cout << *e << "  |  ";
+      }
+      for (auto &e : v.second->inEdges) {
+        std::cout << *(e.lock()) << "  |  ";
+      }
+      std::cout << std::endl;
+    }
+
+    std::cout << "\n********* FINISHED PRINTING *********\n\n";
+  }
 
   /* ***** ALGORITHMS  ***** */
 
-  self dfs(node *v = nullptr) {
+  self dfs(node *v = nullptr) const {
     // If starting node is null, initialize starting node with first node in
     // graph
     if (!v) {
       v = (this->nodes).begin()->second;
-
     }
 
     self ST(this->directed);
@@ -265,12 +333,11 @@ public:
     std::cout << "\n";
     return ST;
   }
-  self bfs(node *v = nullptr) {
+  self bfs(node *v = nullptr) const {
     // If starting node is null, initialize starting node with first node in
     // graph
     if (!v) {
       v = (this->nodes).begin()->second;
-
     }
 
     self ST(this->directed);
@@ -306,7 +373,7 @@ public:
     return ST;
   }
 
-  self prim(N startpos = -1) {
+  self prim(N startpos = -1) const {
     // check if graph is connected
     self MST(this->directed, 'v');
     std::map<int, node *> parent;
@@ -348,7 +415,7 @@ public:
     }
     return MST;
   }
-  self *kruskal() {
+  self *kruskal() const {
     self MST(this, 'v');
     DisjointSet<self> DS;
     std::set<edge, non_dec_unique<edge>> GE;
@@ -380,188 +447,204 @@ public:
     return MST;
   }
 
-	float density() {
-		float numberEdges = 0;
-		for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
-			for (EdgeIte it = (*ni).second->edges.begin(); it != (*ni).second->edges.end(); it++) {
-				numberEdges++;
-			}
-		}
-		return ((numberEdges)/(this->size()*(this->size()-1)));
-	}
+  float density() const {
+    float numberEdges = 0;
+    for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+      for (EdgeIte it = (*ni).second->edges.begin();
+           it != (*ni).second->edges.end(); it++) {
+        numberEdges++;
+      }
+    }
+    return ((numberEdges) / (this->size() * (this->size() - 1)));
+  }
 
-	bool isDense(float criteria = 0.6) {
-		if (criteria < this->density()) return true;
-		else return false;
-	}
+  bool isDense(float criteria = 0.6) const {
+    if (criteria < this->density())
+      return true;
+    else
+      return false;
+  }
 
-	int nodeGrade(N tag) {
-		if (!this->isDirected()) {
-			node *pnode = nodes[tag];
-			int grade = 0;
-			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
-				grade++;
-			}
-			return grade;
-		}else{
-			return this->nodeInGrade(tag) + this->nodeOutGrade(tag);
-		}
-	}
+  int nodeGrade(N tag) const {
+    if (!this->isDirected()) {
+      node *pnode = nodes[tag];
+      int grade = 0;
+      for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end();
+           it++) {
+        grade++;
+      }
+      return grade;
+    } else {
+      return this->nodeInGrade(tag) + this->nodeOutGrade(tag);
+    }
+  }
 
-	int nodeInGrade(N tag) {
-		if (!this->isDirected()) {
-			return this->nodeGrade(tag);
-		}else{
-			node *pnode = nodes[tag];
-			int grade = 0;
-			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
-				if ((*it)->printV2()==tag) {
-					grade++;
-				}
-			}
-			return grade;
-		}
-	}
+  int nodeInGrade(N tag) const {
+    if (!this->isDirected()) {
+      return this->nodeGrade(tag);
+    } else {
+      node *pnode = nodes[tag];
+      int grade = 0;
+      for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end();
+           it++) {
+        if ((*it)->printV2() == tag) {
+          grade++;
+        }
+      }
+      return grade;
+    }
+  }
 
-	int nodeOutGrade(N tag) {
-		if (!this->isDirected()) {
-			return this->nodeGrade(tag);
-		}else{
-			node *pnode = nodes[tag];
-			int grade = 0;
-			for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end(); it++) {
-				if ((*it)->printV1()==tag) {
-					grade++;
-				}
-			}
-			return grade;
-		}
-	}
+  int nodeOutGrade(N tag) const {
+    if (!this->isDirected()) {
+      return this->nodeGrade(tag);
+    } else {
+      node *pnode = nodes[tag];
+      int grade = 0;
+      for (EdgeIte it = (pnode)->edges.begin(); it != (pnode)->edges.end();
+           it++) {
+        if ((*it)->printV1() == tag) {
+          grade++;
+        }
+      }
+      return grade;
+    }
+  }
 
-	bool isFontNode(N tag) {
-		if (!this->isDirected()) {
-			return false;
-		}
-		if (this->nodeOutGrade(tag) != 0 && this->nodeInGrade(tag) == 0) {
-			return true;
-		}else return false;
-	}
+  bool isFontNode(N tag) const {
+    if (!this->isDirected()) {
+      return false;
+    }
+    if (this->nodeOutGrade(tag) != 0 && this->nodeInGrade(tag) == 0) {
+      return true;
+    } else
+      return false;
+  }
 
-	bool isSunkenNode(N tag){
-		if (!this->isDirected()) {
-			return false;
-		}
-		if (this->nodeOutGrade(tag) == 0 && this->nodeInGrade(tag) != 0) {
-			return true;
-		}else return false;
-	}
+  bool isSunkenNode(N tag) const {
+    if (!this->isDirected()) {
+      return false;
+    }
+    if (this->nodeOutGrade(tag) == 0 && this->nodeInGrade(tag) != 0) {
+      return true;
+    } else
+      return false;
+  }
 
-	void nodeInfo(E tag) {
-		std::cout << "Grado: " << this->nodeGrade(tag) << '\n';
-		std::cout << "Grado de entrada: " << this->nodeInGrade(tag) << '\n';
-		std::cout << "Grado de salida: " << this->nodeOutGrade(tag) << '\n';
-		std::cout << "Nodo hundido: " << this->isSunkenNode(tag) << '\n';
-		std::cout << "Nodo fuente: " << this->isFontNode(tag) << '\n';
-	}
+  void nodeInfo(E tag) const {
+    std::cout << "Grado: " << this->nodeGrade(tag) << '\n';
+    std::cout << "Grado de entrada: " << this->nodeInGrade(tag) << '\n';
+    std::cout << "Grado de salida: " << this->nodeOutGrade(tag) << '\n';
+    std::cout << "Nodo hundido: " << this->isSunkenNode(tag) << '\n';
+    std::cout << "Nodo fuente: " << this->isFontNode(tag) << '\n';
+  }
 
-	bool isConnected() {
-		if (this->isDirected()) {
-			return false;
-		} else {
-			self dfsGraph = this->dfs();
-			if (this->size()==dfsGraph.size()) {
-				return true;
-			} else return false;
-		}
-	}
+  bool isConnected() const {
+    if (this->isDirected()) {
+      return false;
+    } else {
+      self dfsGraph = this->dfs();
+      if (this->size() == dfsGraph.size()) {
+        return true;
+      } else
+        return false;
+    }
+  }
 
-	bool isStronglyConnected() {
-		if (!this->isDirected()) {
-			return false;
-		}else{
-			for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
-				self dfsGraph = this->dfs((*ni).second);
-				if (this->size()!=dfsGraph.size()) {
-					return false;
-				}
-			}
-			return true;
-		}
-	}
+  bool isStronglyConnected() const {
+    if (!this->isDirected()) {
+      return false;
+    } else {
+      for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end();
+           ++ni) {
+        self dfsGraph = this->dfs((*ni).second);
+        if (this->size() != dfsGraph.size()) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
 
-	bool isBipartite(){
-		typedef map<E, bool> coloredMap;
-		coloredMap redBlueMap;
-		queue <node *> unColored;
-		redBlueMap[(*((this->nodes).begin())).first]=true;
-		for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
-			if (redBlueMap.find((*ni).first)!=redBlueMap.end()) {
-				bool color = !((*((redBlueMap.find((*ni).first)))).second);
-				for (EdgeIte it = (*ni).second->edges.begin();it != (*ni).second->edges.end(); it++) {
-					if ((*ni).first == (*it)->printV1()) {
-						if (redBlueMap.find((*it)->printV2())!=redBlueMap.end()) {
-							if (redBlueMap[(*it)->printV2()]!=color) {
-								return false;
-							}
-						}else{
-							redBlueMap[(*it)->printV2()]=color;
-						}
-					}
-				}
-			}else{
-				unColored.push((*ni).second);
-			}
-		}
-		while (!unColored.empty()) {
-			if (redBlueMap.find((unColored.front())->print())!=redBlueMap.end()) {
-				bool color = !(redBlueMap[(unColored.front())->print()]);
-				for (EdgeIte it = (unColored.front())->edges.begin();it != (unColored.front())->edges.end(); it++) {
-					if (unColored.front()->print() == (*it)->printV1()) {
-						if (redBlueMap.find((*it)->printV2())!=redBlueMap.end()) {
-							if (redBlueMap[(*it)->printV2()]!=color) {
-								return false;
-							}
-						}else{
-							redBlueMap[(*it)->printV2()]=color;
-						}
-					}
-				}
-				unColored.pop();
-			}else{
-				redBlueMap[(unColored.front())->print()]=true;
-				bool color = !(redBlueMap[(unColored.front())->print()]);
-				for (EdgeIte it = (unColored.front())->edges.begin();it != (unColored.front())->edges.end(); it++) {
-					if ((unColored.front())->print() == (*it)->printV1()) {
-						if (redBlueMap.find((*it)->printV2())!=redBlueMap.end()) {
-							if (redBlueMap[(*it)->printV2()]!=color) {
-								return false;
-							}
-						}else{
-							redBlueMap[(*it)->printV2()]=color;
-						}
-					}
-				}
-				unColored.pop();
-			}
-		}
-		return true;
-	}
+  bool isBipartite() const {
+    typedef map<E, bool> coloredMap;
+    coloredMap redBlueMap;
+    queue<node *> unColored;
+    redBlueMap[(*((this->nodes).begin())).first] = true;
+    for (NodeIte ni = (this->nodes).begin(); ni != (this->nodes).end(); ++ni) {
+      if (redBlueMap.find((*ni).first) != redBlueMap.end()) {
+        bool color = !((*((redBlueMap.find((*ni).first)))).second);
+        for (EdgeIte it = (*ni).second->edges.begin();
+             it != (*ni).second->edges.end(); it++) {
+          if ((*ni).first == (*it)->printV1()) {
+            if (redBlueMap.find((*it)->printV2()) != redBlueMap.end()) {
+              if (redBlueMap[(*it)->printV2()] != color) {
+                return false;
+              }
+            } else {
+              redBlueMap[(*it)->printV2()] = color;
+            }
+          }
+        }
+      } else {
+        unColored.push((*ni).second);
+      }
+    }
+    while (!unColored.empty()) {
+      if (redBlueMap.find((unColored.front())->print()) != redBlueMap.end()) {
+        bool color = !(redBlueMap[(unColored.front())->print()]);
+        for (EdgeIte it = (unColored.front())->edges.begin();
+             it != (unColored.front())->edges.end(); it++) {
+          if (unColored.front()->print() == (*it)->printV1()) {
+            if (redBlueMap.find((*it)->printV2()) != redBlueMap.end()) {
+              if (redBlueMap[(*it)->printV2()] != color) {
+                return false;
+              }
+            } else {
+              redBlueMap[(*it)->printV2()] = color;
+            }
+          }
+        }
+        unColored.pop();
+      } else {
+        redBlueMap[(unColored.front())->print()] = true;
+        bool color = !(redBlueMap[(unColored.front())->print()]);
+        for (EdgeIte it = (unColored.front())->edges.begin();
+             it != (unColored.front())->edges.end(); it++) {
+          if ((unColored.front())->print() == (*it)->printV1()) {
+            if (redBlueMap.find((*it)->printV2()) != redBlueMap.end()) {
+              if (redBlueMap[(*it)->printV2()] != color) {
+                return false;
+              }
+            } else {
+              redBlueMap[(*it)->printV2()] = color;
+            }
+          }
+        }
+        unColored.pop();
+      }
+    }
+    return true;
+  }
 
-	node* findNode(N tag) {
-		if (nodes.find(tag)!=nodes.end()) {
-			return nodes[tag];
-		} else return nullptr;
-	}
+  node *findNode(N tag) const {
+    if (nodes.find(tag) != nodes.end()) {
+      return nodes[tag];
+    } else
+      return nullptr;
+  }
 
-	edge* findEdge(N v1, N v2) {
-		if (nodes.find(v1)!=nodes.end()) {
-			for (EdgeIte it = nodes[v1]->edges.begin(); it != nodes[v1]->edges.end(); it++) {
-				if ((*it)->printV1()==v1 && (*it)->printV2()==v2) {
-					return (*it);
-				}
-			}
-		} else return nullptr;
-	}
+  edge *findEdge(N v1, N v2) const {
+    if (nodes.find(v1) != nodes.end()) {
+      for (EdgeIte it = nodes[v1]->edges.begin(); it != nodes[v1]->edges.end();
+           it++) {
+        if ((*it)->printV1() == v1 && (*it)->printV2() == v2) {
+          return (*it);
+        }
+      }
+    } else
+      return nullptr;
+  }
 };
 
 typedef Graph<Traits> graph;

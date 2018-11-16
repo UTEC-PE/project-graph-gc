@@ -23,7 +23,7 @@ public:
   std::pair<int, node *> *A;
   int length;
   int heap_size;
-  int INF = INT_MAX;
+  const int INF = INT_MAX;
 
   // CONSTRUCTORS
 
@@ -62,9 +62,9 @@ public:
   }
   // UTILITY FUNCTIONS
 
-  inline int parent(int i) { return ((i - 1) >> 1); }
-  inline int left(int i) { return (i << 1) + 1; }
-  inline int right(int i) { return ((i << 1) + 2); }
+  inline int parent(int i) const { return ((i - 1) >> 1); }
+  inline int left(int i) const { return (i << 1) + 1; }
+  inline int right(int i) const { return ((i << 1) + 2); }
 
   void updateWeight(node *v, int weight) {
     int i;
@@ -82,7 +82,7 @@ public:
       }
     }
   }
-  N weight(node *v) {
+  N weight(node *v) const {
     for (int i = 0; i < this->length; ++i) {
       if (A[i].second->data == v->data) {
         return A[i].first;
@@ -90,7 +90,7 @@ public:
     }
   }
 
-  bool has(node *v) {
+  bool has(node *v) const {
     for (int i = 0; i < this->heap_size; ++i) {
       if (A[i].second->data == v->data) {
         return true;
@@ -150,7 +150,7 @@ public:
     this->A[pos1] = this->A[pos2];
     this->A[pos2] = temp;
   }
-  void print() {
+  void print() const {
 
     std::cout << "printing pq with length: " << this->length << "\n";
     for (int i = 0; i < this->heap_size; i++) {
@@ -205,9 +205,9 @@ public:
       parent1->parent = parent2;
     }
   }
-  node *findSet(N data) { return findSet(this->nodes[data]); }
+  node *findSet(N data) const { return findSet(this->nodes[data]); }
 
-  node *findSet(node *vertex) {
+  node *findSet(node *vertex) const {
     node *current = vertex;
     while (current != current->parent) {
       current = current->parent;

@@ -22,9 +22,10 @@ public:
     (this->nodes)[1] = v2;
   }
   ~Edge() {
+    std::cout << "Edge " << *this << " (address: " << this << ")"
+              << " is being deleted...   ";
 
-    std::cout << "Edge " << *this << " is being deleted...   ";
-    nodes[0] = nodes[1] = nullptr;
+    (this->nodes)[0] = (this->nodes)[1] = nullptr;
     std::cout << "Done.\n";
   }
   friend std::ostream &operator<<(std::ostream &os, const Edge<G> &e) {
@@ -47,20 +48,40 @@ public:
     return this->data < edge.data;
   }
 
-  E printWeight() { return data; };
-  N printV1() { return (this->nodes)[0]->print(); };
+  inline E getWeight() const { return data; };
+  N printV1() const { return (this->nodes)[0]->print(); };
   N printV2() { return (this->nodes)[1]->print(); };
-  bool printDir() { return this->dir; };
-  bool remove_if_has(N &v_data) {
+  inline bool getDir() const { return this->dir; };
+  bool removeIfHas(N &v_data) {
     if (this->has(v_data)) {
-      std::cout << "this edge: " << *this << "has " << v_data << std::endl;
       delete this;
       return true;
     }
     return false;
   }
-  inline bool has(N &v_data) {
+  bool removeIfGoesTo(N &v_data) {
+    if (this->nodes[1]->is(v_data)) {
+      delete this;
+      return true;
+    }
+    return false;
+  }
+
+  bool removeIfSame(N &nodeFrom, N &nodeTo) {
+    if (this->is(nodeFrom, nodeTo)) {
+      delete this;
+      return true;
+    }
+    return false;
+  }
+  inline bool is(N &nodeFrom, N &nodeTo) const {
+    return (this->nodes[0]->data == nodeFrom && this->nodes[1]->data == nodeTo);
+  }
+  inline bool has(N &v_data) const {
     return (this->nodes[0]->data == v_data || this->nodes[1]->data == v_data);
+  }
+  inline bool hasNULL() const {
+    return (this->nodes[0] == nullptr || this->nodes[1] == nullptr);
   }
 };
 
