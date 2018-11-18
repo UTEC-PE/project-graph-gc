@@ -16,10 +16,11 @@ public:
     const node *end;
   };
 
+  const node *nodes[2];
+
 private:
   E weight;
   bool dir;
-  const node *nodes[2];
 
 public:
   Edge(E weight_, bool dir_, const node *v1, const node *v2)
@@ -31,10 +32,19 @@ public:
   inline bool getDirection() const { return this->dir; }
   inline pairV getNodes() const { return this->nodes; }
 
+  bool is(N vFrom, N vTo) const {
+    return (this->nodes[0]->tag == vFrom && this->nodes[1]->tag == vTo);
+  }
+
   friend std::ostream &operator<<(std::ostream &os, const Edge<G> &e) {
     os << "(edge: (" << e.nodes[0]->tag << ", " << e.nodes[1]->tag
        << "), w: " << e.weight << ')';
     return os;
+  }
+  ~Edge() {
+    std::cout << "deleting " << *(this);
+    this->nodes[0] = this->nodes[1] = nullptr;
+    std::cout << "...    done.\n";
   }
 };
 

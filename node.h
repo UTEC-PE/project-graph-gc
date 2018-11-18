@@ -30,11 +30,73 @@ public:
   }
   inline pairN getCoordinates() const { return this->coordinates; }
   inline N getTag() const { return this->tag; }
+  inline bool operator==(N v) const { return this->tag == v; }
   void addEdge(std::shared_ptr<edge> &e) {
     (this->outEdges).push_back(std::move(e));
   }
   void addEdge(std::weak_ptr<edge> &e) {
     (this->inEdges).push_back(std::move(e));
+  }
+  void removeEdgeIfGoesTo(N tag) {
+    // this method be used, by definition, in outEdges.
+    this->outEdges.erase(std::remove_if(this->outEdges.begin(),
+                                        this->outEdges.end(),
+                                        [&](auto &e) -> bool {
+                                          if (e->nodes[1]->tag == tag) {
+                                            e.reset();
+                                            return true;
+                                          } else {
+                                            return false;
+                                          }
+                                        }),
+                         this->outEdges.end());
+  }
+  void removeExpiredEdge() {
+    this->inEdges.erase(std::remove_if(this->inEdges.begin(),
+                                       this->inEdges.end(),
+                                       [](auto &e) -> bool {
+                                         if (e.expired()) {
+                                           e.reset();
+                                           return true;
+                                         } else {
+
+                                           return false;
+                                         }
+                                       }),
+                        this->inEdges.end());
+  }
+  void removeEdge(N vFrom, N vTo) {
+    if (vFrom == this->tag) {
+      this->outEdges.erase(std::remove_if(this->outEdges.begin(),
+                                          this->outEdges.end(),
+                                          [&](auto &e) -> bool {
+                                            if (e->is(vFrom, vTo)) {
+                                              e.reset();
+                                              return true;
+                                            } else {
+                                              return false;
+                                            }
+                                          }),
+                           this->outEdges.end());
+    } else {
+      this->inEdges.erase(std::remove_if(this->inEdges.begin(),
+                                         this->inEdges.end(),
+                                         [&](auto &e) -> bool {
+                                           if ((e.lock())->is(vFrom, vTo)) {
+                                             e.reset();
+                                             return true;
+                                           } else {
+                                             return false;
+                                           }
+                                         }),
+                          this->inEdges.end());
+    }
+  }
+  ~Node() {
+    // This destructor does NOT free the memory occupied by the edges, use
+    // Graph->removeVertex() for that.
+    std::cout << "Destroying node " << this->tag << "... ";
+    std::cout << "Done.\n";
   }
 };
 

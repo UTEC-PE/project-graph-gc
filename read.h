@@ -15,7 +15,7 @@ template <typename G> class Read {
   typedef typename G::E E;
 
 private:
-  graph readGraph;
+  graph *readGraph;
 
 public:
   Read(const char *file) {
@@ -25,11 +25,12 @@ public:
       int numberNodes;
       bool isDirected;
       graphFile >> numberNodes >> isDirected;
-      this->readGraph.directed = isDirected;
+
+      this->readGraph = new graph(isDirected);
       for (int tag = 0; tag < numberNodes; ++tag) {
         double x, y;
         graphFile >> x >> y;
-        this->readGraph.addVertex(tag, x, y);
+        this->readGraph->addVertex(tag, x, y);
       }
       while (!graphFile.eof()) {
         N vFrom, vTo;
@@ -38,7 +39,7 @@ public:
         graphFile >> vFrom >> vTo >> weight >> directed;
         if (graphFile.eof())
           break;
-        this->readGraph.addEdge(weight, directed, vFrom, vTo);
+        this->readGraph->addEdge(weight, directed, vFrom, vTo);
       }
 
       graphFile.close();
@@ -46,7 +47,7 @@ public:
       throw("Unable to open the graph file");
   }
 
-  graph &getGraph() { return this->readGraph; }
+  graph *&getGraph() { return this->readGraph; }
 };
 
 #endif
