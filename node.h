@@ -3,6 +3,7 @@
 #include "graph.h"
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <vector>
 
 template <typename G> class Node {
@@ -30,6 +31,19 @@ public:
   }
   inline pairN getCoordinates() const { return this->coordinates; }
   inline N getTag() const { return this->tag; }
+  E getWeight(N vTo) const {
+    return (*std::find_if(outEdges.begin(), outEdges.end(),
+                          [&](auto const &e) {
+                            if (e->is(this->tag, vTo)) {
+                              return true;
+                            } else {
+                              return false;
+                            }
+                          }
+
+                          ))
+        ->getWeight();
+  }
   inline bool operator==(N v) const { return this->tag == v; }
   void addEdge(std::shared_ptr<edge> &e) {
     (this->outEdges).push_back(std::move(e));

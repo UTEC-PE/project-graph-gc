@@ -3,6 +3,7 @@
 
 #include "graph.h"
 #include <iostream>
+#include <utility>
 
 template <typename G> class Edge {
 
@@ -31,7 +32,10 @@ public:
   inline E getWeight() const { return this->weight; }
   inline bool getDirection() const { return this->dir; }
   inline pairV getNodes() const { return this->nodes; }
-
+  inline bool operator==(const Edge<G> &e) {
+    return this->nodes[0]->tag == e.nodes[0]->tag &&
+           this->nodes[1]->tag == e.nodes[1]->tag;
+  }
   bool is(N vFrom, N vTo) const {
     return (this->nodes[0]->tag == vFrom && this->nodes[1]->tag == vTo);
   }

@@ -1,14 +1,22 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include "bellman_ford.h"
+#include "best_first_search.h"
+#include "dijkstra.h"
 #include "edge.h"
 #include "node.h"
 #include <map>
 #include <memory>
 #include <stack>
+#include <stdexcept>
 #include <utility>
 #include <vector>
+
 template <typename G> class Read;
+template <typename G> class DijkstraHelper;
+template <typename G> class BellmanHelper;
+template <typename G> class BFSHelper;
 
 class Traits {
 public:
@@ -65,14 +73,15 @@ public:
   void addEdge(E weight, bool directed, const node *vFrom, const node *vTo) {
 
     auto e12 = std::make_shared<edge>(weight, directed, vFrom, vTo);
-    auto e21 = std::make_shared<edge>(weight, directed, vTo, vFrom);
-    auto e12w = std::weak_ptr<edge>(e12);
 
     if (directed) {
+
+      auto e12w = std::weak_ptr<edge>(e12);
       this->nodes[vFrom->tag]->addEdge(e12);
       this->nodes[vTo->tag]->addEdge(e12w);
     } else {
 
+      auto e21 = std::make_shared<edge>(weight, directed, vTo, vFrom);
       this->nodes[vFrom->tag]->addEdge(e12);
       this->nodes[vTo->tag]->addEdge(e21);
     }
@@ -145,6 +154,9 @@ public:
     }
   }
 
+  E getWeight(N vFrom, N vTo) const {
+    return (this->nodes.at(vFrom)->getWeight(vTo));
+  }
   void pprint() const {
     for (auto const &v : this->nodes) {
       std::cout << "   <<<<<<  " << (v.first) << " : ";
@@ -171,7 +183,52 @@ public:
     }
   }
 
+  // ********************* ALGORITHMS *******************
+
+  void dijkstra(N start) {
+    // validating
+
+    if (!this->nodes[start])
+      throw std::invalid_argument("node out of range");
+    std::cout << "creating dijkstra helper\n";
+    DijkstraHelper<self> DH(start, this);
+
+    std::cout << "printing dijkstra helper\n";
+    DH.printTable();
+  }
+
+  void bellmanFord(N start) {
+    // validating
+
+    if (!this->nodes[start])
+      throw std::invalid_argument("node out of range");
+    std::cout << "creating bellman ford helper\n";
+    BellmanHelper<self> BH(start, this);
+
+    std::cout << "printing bellman ford helper\n";
+    BH.printTable();
+  }
+
+  void greedyBFS(N start, N goal) {
+
+    if (!this->nodes[start])
+      throw std::invalid_argument("node out of range");
+
+    std::cout << "creating greedy BFS helper\n";
+    BFSHelper<self> BFS(start, goal, this);
+
+    std::cout << "printing greedy BFS helper\n";
+    BFS.printTable();
+  }
+
+  // ********************* UTILITY *******************
+
+  int getNumberOfNodes() const { return this->nodes.size(); }
+
   friend class Read<self>;
+  friend class DijkstraHelper<self>;
+  friend class BellmanHelper<self>;
+  friend class BFSHelper<self>;
 };
 typedef Graph<Traits> graph;
 
