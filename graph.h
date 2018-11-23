@@ -190,6 +190,11 @@ public:
 
     if (!this->nodes[start])
       throw std::invalid_argument("node out of range");
+    if (this->properties.HAS_NEG_EDGE) {
+      throw std::invalid_argument(
+          "illegal action: tried to run dijkstra with a negative edge.");
+    }
+
     std::cout << "creating dijkstra helper\n";
     DijkstraHelper<self> DH(start, this);
 

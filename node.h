@@ -1,6 +1,7 @@
 #ifndef NODE_H
 #define NODE_H
 #include "graph.h"
+#include <climits>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -32,7 +33,7 @@ public:
   inline pairN getCoordinates() const { return this->coordinates; }
   inline N getTag() const { return this->tag; }
   E getWeight(N vTo) const {
-    return (*std::find_if(outEdges.begin(), outEdges.end(),
+    auto A = std::find_if(outEdges.begin(), outEdges.end(),
                           [&](auto const &e) {
                             if (e->is(this->tag, vTo)) {
                               return true;
@@ -41,8 +42,12 @@ public:
                             }
                           }
 
-                          ))
-        ->getWeight();
+    );
+    if (A == outEdges.end()) {
+      return INT_MAX;
+    } else {
+      return (*A)->getWeight();
+    }
   }
   inline bool operator==(N v) const { return this->tag == v; }
   void addEdge(std::shared_ptr<edge> &e) {

@@ -30,7 +30,6 @@ public:
   BFSHelper(N start_, N goal_, const graph *G_) {
     this->start = start_;
     this->goal = goal_;
-    std::cout << "hey\n";
 
     this->G = G_;
 
@@ -50,7 +49,6 @@ public:
         output.push_back(std::make_pair(u, info(G->getWeight(temp, u), temp)));
       }
       temp = u;
-      std::cout << "node: " << u << '\n';
       if (u == this->goal) {
         return true;
       }
@@ -79,6 +77,10 @@ public:
       std::cout << v.first << " | " << v.second.cost << " | " << v.second.parent
                 << "\n";
     }
+  }
+
+  const std::vector<std::pair<N, info>> &getTable() const {
+    return this->table;
   }
 };
 

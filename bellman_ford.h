@@ -26,13 +26,8 @@ private:
 
 public:
   BellmanHelper(N start, const graph *G_) {
-    std::cout << "hey\n";
     this->G = G_;
-    std::cout << "executing\n";
     bool hasNegCycle = !(this->execute(start));
-    std::cout << "Does it have a neg cycle? : " << hasNegCycle << '\n';
-    std::cout << "executed.\n";
-
     if (hasNegCycle) {
       throw std::invalid_argument(
           "Graph has a negative cycle, Bellman Ford can't provide exact "
@@ -46,13 +41,11 @@ public:
     for (int it = 0, iterations = G->getNumberOfNodes(); it < iterations;
          ++it) {
       for (auto const &v : G->nodes) {
-        std::cout << "node :" << v.first << '\n';
         for (auto const &e : v.second->outEdges) {
           if (this->table[v.first].cost != INT_MAX) {
             this->relax(e->nodes[0]->tag, e->nodes[1]->tag, e->getWeight());
           }
         }
-        this->printTable();
       }
     }
 
@@ -93,6 +86,8 @@ public:
                 << "\n";
     }
   }
+
+  const std::map<N, info> &getTable() const { return this->table; }
 };
 
 #endif

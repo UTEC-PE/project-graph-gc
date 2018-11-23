@@ -34,7 +34,6 @@ private:
 
 public:
   DijkstraHelper(N start, const graph *G_) {
-    std::cout << "hey\n";
 
     this->G = G_;
 
@@ -79,6 +78,8 @@ public:
                 << "\n";
     }
   }
+
+  const std::map<N, info> &getTable() const { return this->table; }
 };
 
 #endif
