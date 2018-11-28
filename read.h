@@ -3,83 +3,51 @@
 
 #include "graph.h"
 #include <fstream>
-using namespace std;
 
 /**
  * Clase de ayuda para leer el grafo desde un archivo,
  * no es necesario que la utilicen, podrían implementar su lector
  * desde su grafo o algún otro lado
  **/
-template <typename G>
-class Read {
-	typedef typename G::N N;
-	typedef typename G::E E;
+template <typename G> class Read {
+
+  typedef typename G::N N;
+  typedef typename G::E E;
 
 private:
-	graph readGraph;
-	public:
-		Read(char* file) {
-			ifstream graphFile;
-		  graphFile.open(file);
-		  string lineGraphFile;
-		  if (graphFile.is_open()) {
-		    getline(graphFile,lineGraphFile);
-		    int numberNodes = 0;
-				bool dirigedGraph = false;
-				readGraphInformation(numberNodes, dirigedGraph, lineGraphFile);
-				graph tempGraph(numberNodes, dirigedGraph);
-				this->readGraph = tempGraph;
-		    for (int i = 0; i < numberNodes; i++) {
-					N tag=i;
-					float x=0, y=0;
-					getline(graphFile,lineGraphFile);
-		      readCoordinateTag(x,y,tag,lineGraphFile);
-					this->readGraph.addVertex(tag,x,y);
-		    }
-		    getline(graphFile,lineGraphFile);
-				while(getline(graphFile,lineGraphFile)) {
-						N node1=0;
-						N node2=0;
-						E edgeWeight=0;
-						bool dirigedEdge=false;
-						readNodeInformation(node1,node2,edgeWeight,dirigedEdge,lineGraphFile);
-						this->readGraph.addEdge(node1, node2, edgeWeight, dirigedEdge);
-				}
-		    graphFile.close();
-		  }else throw("Unable to open the graph file");
-    }
+  graph *readGraph;
 
-		void readCoordinateTag (float &xCoordinate, float &yCoordinate, N &tag, string line) {
-			xCoordinate = stof(line.substr(0,line.find(" ")));
-			line = line.substr(line.find(" ")+1);
-			if (string::npos!=line.find(" ")) {
-				yCoordinate = stof(line.substr(0,line.find(" ")));
-				line = line.substr(line.find(" ")+1);
-				tag = stoi(line);
-			}else{
-				yCoordinate = stof(line);
-			}
-		};
+public:
+  Read(const char *file) {
+    std::ifstream graphFile;
+    graphFile.open(file);
+    if (graphFile.is_open()) {
+      int numberNodes;
+      bool isDirected;
+      graphFile >> numberNodes >> isDirected;
 
-		void readNodeInformation (N &node1, N &node2, E &edgeWeight, bool &dirigedEdge, string lineGraphFile) {
-			node1 = stoi(lineGraphFile.substr(0,lineGraphFile.find(" ")));
-			lineGraphFile = lineGraphFile.substr(lineGraphFile.find(" ")+1);
-			node2 = stoi(lineGraphFile.substr(0,lineGraphFile.find(" ")));
-			lineGraphFile = lineGraphFile.substr(lineGraphFile.find(" ")+1);
-			edgeWeight = stoi(lineGraphFile.substr(0,lineGraphFile.find(" ")));
-			lineGraphFile = lineGraphFile.substr(lineGraphFile.find(" ")+1);
-			dirigedEdge = stoi(lineGraphFile);
-		};
+      this->readGraph = new graph(isDirected);
+      for (int tag = 0; tag < numberNodes; ++tag) {
+        double x, y;
+        graphFile >> x >> y;
+        this->readGraph->addVertex(tag, x, y);
+      }
+      while (!graphFile.eof()) {
+        N vFrom, vTo;
+        E weight;
+        bool directed;
+        graphFile >> vFrom >> vTo >> weight >> directed;
+        if (graphFile.eof())
+          break;
+        this->readGraph->addEdge(weight, directed, vFrom, vTo);
+      }
 
-		void readGraphInformation (int &numberNodes, bool &dirigedGraph, string lineGraphFile) {
-			numberNodes = stoi(lineGraphFile.substr(0,lineGraphFile.find(" ")));
-			lineGraphFile = lineGraphFile.substr(lineGraphFile.find(" ")+1);
-			dirigedGraph = stoi(lineGraphFile);
-		};
+      graphFile.close();
+    } else
+      throw("Unable to open the graph file");
+  }
 
-		graph getGraph() {
-			return this->readGraph;
-    }
+  graph *&getGraph() { return this->readGraph; }
 };
 
 #endif

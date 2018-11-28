@@ -2,65 +2,53 @@
 #define EDGE_H
 
 #include "graph.h"
-#include "node.h"
 #include <iostream>
-#include <ostream>
+#include <utility>
 
 template <typename G> class Edge {
+
 public:
   typedef typename G::E E;
   typedef typename G::node node;
   typedef typename G::N N;
 
-  E data;
+  struct pairV {
+    const node *start;
+    const node *end;
+  };
+
+  const node *nodes[2];
+
+private:
+  E weight;
   bool dir;
 
-  node *nodes[2];
-
-  Edge(E data, bool dir, node *v1, node *v2) : data(data), dir(dir) {
-    (this->nodes)[0] = v1;
-    (this->nodes)[1] = v2;
+public:
+  Edge(E weight_, bool dir_, const node *v1, const node *v2)
+      : weight(weight_), dir(dir_) {
+    this->nodes[0] = v1;
+    this->nodes[1] = v2;
   }
-  ~Edge() {
-
-    std::cout << "Edge " << *this << " is being deleted...   ";
-    nodes[0] = nodes[1] = nullptr;
-    std::cout << "Done.\n";
+  inline E getWeight() const { return this->weight; }
+  inline bool getDirection() const { return this->dir; }
+  inline pairV getNodes() const { return this->nodes; }
+  inline bool operator==(const Edge<G> &e) {
+    return this->nodes[0]->tag == e.nodes[0]->tag &&
+           this->nodes[1]->tag == e.nodes[1]->tag;
   }
+  bool is(N vFrom, N vTo) const {
+    return (this->nodes[0]->tag == vFrom && this->nodes[1]->tag == vTo);
+  }
+
   friend std::ostream &operator<<(std::ostream &os, const Edge<G> &e) {
-
-    if (e.dir) {
-      os << "(edge: (" << e.nodes[0]->data << ", " << e.nodes[1]->data
-         << "), w: " << e.data << ')';
-    } else {
-
-      os << "(edge: {" << e.nodes[0]->data << ", " << e.nodes[1]->data
-         << "}, w: " << e.data << ')';
-    }
+    os << "(edge: (" << e.nodes[0]->tag << ", " << e.nodes[1]->tag
+       << "), w: " << e.weight << ')';
     return os;
   }
-
-  inline bool operator==(const Edge<G> edge) const {
-    return ((this->nodes) == edge.nodes);
-  }
-  inline bool operator<(const Edge<G> edge) const {
-    return this->data < edge.data;
-  }
-
-  E printWeight() { return data; };
-  N printV1() { return (this->nodes)[0]->print(); };
-  N printV2() { return (this->nodes)[1]->print(); };
-  bool printDir() { return this->dir; };
-  bool remove_if_has(N &v_data) {
-    if (this->has(v_data)) {
-      std::cout << "this edge: " << *this << "has " << v_data << std::endl;
-      delete this;
-      return true;
-    }
-    return false;
-  }
-  inline bool has(N &v_data) {
-    return (this->nodes[0]->data == v_data || this->nodes[1]->data == v_data);
+  ~Edge() {
+    std::cout << "deleting " << *(this);
+    this->nodes[0] = this->nodes[1] = nullptr;
+    std::cout << "...    done.\n";
   }
 };
 
