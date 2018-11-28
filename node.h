@@ -6,6 +6,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 template <typename G> class Node {
 

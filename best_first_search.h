@@ -4,6 +4,7 @@
 #include "graph.h"
 #include "priority_queue.h"
 #include <iostream>
+#include <vector>
 #include <unordered_map>
 
 template <typename GH> class BFSHelper {

@@ -7,6 +7,8 @@
 #include "edge.h"
 #include "node.h"
 #include <map>
+#include <vector>
+#include <math.h>
 #include <memory>
 #include <stack>
 #include <stdexcept>
@@ -254,6 +256,19 @@ public:
                              (((*itEdge)->nodes[1])->getCoordinates()).y,
                          2),
                  0.5))) {
+          nextNode = (*itEdge)->nodes[1];
+          moveValue =
+              ((pathValue + (*itEdge)->getWeight()) +
+               pow(pow((endNode->getCoordinates()).x -
+                           (((*itEdge)->nodes[1])->getCoordinates()).x,
+                       2) +
+                       pow((endNode->getCoordinates()).y -
+                               (((*itEdge)->nodes[1])->getCoordinates()).y,
+                           2),
+                   0.5));
+          weight = (*itEdge)->getWeight();
+        }
+        if (((*itEdge)->nodes[1])->getTag() == tagEnd) {
           nextNode = (*itEdge)->nodes[1];
           moveValue =
               ((pathValue + (*itEdge)->getWeight()) +
