@@ -195,10 +195,10 @@ public:
           "illegal action: tried to run dijkstra with a negative edge.");
     }
 
-    std::cout << "creating dijkstra helper\n";
+    // std::cout << "creating dijkstra helper\n";
     DijkstraHelper<self> DH(start, this);
 
-    std::cout << "printing dijkstra helper\n";
+    // std::cout << "printing dijkstra helper\n";
     DH.printTable();
   }
 
@@ -207,10 +207,10 @@ public:
 
     if (!this->nodes[start])
       throw std::invalid_argument("node out of range");
-    std::cout << "creating bellman ford helper\n";
+    // std::cout << "creating bellman ford helper\n";
     BellmanHelper<self> BH(start, this);
 
-    std::cout << "printing bellman ford helper\n";
+    // std::cout << "printing bellman ford helper\n";
     BH.printTable();
   }
 
@@ -219,14 +219,116 @@ public:
     if (!this->nodes[start])
       throw std::invalid_argument("node out of range");
 
-    std::cout << "creating greedy BFS helper\n";
+    // std::cout << "creating greedy BFS helper\n";
     BFSHelper<self> BFS(start, goal, this);
 
-    std::cout << "printing greedy BFS helper\n";
+    // std::cout << "printing greedy BFS helper\n";
     BFS.printTable();
   }
 
+  self aEstrella(N tagStart, N tagEnd) {
+    self ruta(true);
+    const node *currentNode = this->findNode(tagStart);
+    node *endNode = this->findNode(tagEnd);
+    if (currentNode == nullptr || this->findNode(tagEnd) == nullptr) {
+      throw("No existen los nodos solicitados");
+    }
+    ruta.addVertex(currentNode->getTag(), (currentNode->getCoordinates()).x,
+                   (currentNode->getCoordinates()).y);
+    int pathValue = 0;
+    while (currentNode->getTag() != tagEnd) {
+      int moveValue = INT_MAX;
+      const node *nextNode = nullptr;
+      int weight = 0;
+      for (auto itEdge = (currentNode->outEdges).begin();
+           itEdge != (currentNode->outEdges).end(); itEdge++) {
+        if (ruta.findNode(((*itEdge)->nodes[1])->getTag()) != nullptr) {
+          continue;
+        }
+        if (moveValue >
+            ((pathValue + (*itEdge)->getWeight()) +
+             pow(pow((endNode->getCoordinates()).x -
+                         (((*itEdge)->nodes[1])->getCoordinates()).x,
+                     2) +
+                     pow((endNode->getCoordinates()).y -
+                             (((*itEdge)->nodes[1])->getCoordinates()).y,
+                         2),
+                 0.5))) {
+          nextNode = (*itEdge)->nodes[1];
+          moveValue =
+              ((pathValue + (*itEdge)->getWeight()) +
+               pow(pow((endNode->getCoordinates()).x -
+                           (((*itEdge)->nodes[1])->getCoordinates()).x,
+                       2) +
+                       pow((endNode->getCoordinates()).y -
+                               (((*itEdge)->nodes[1])->getCoordinates()).y,
+                           2),
+                   0.5));
+          weight = (*itEdge)->getWeight();
+        }
+      }
+      if (nextNode == nullptr) {
+        throw("No existe un camino entre los nodos");
+      }
+      pathValue += weight;
+      ruta.addVertex(nextNode->getTag(), (nextNode->getCoordinates()).x,
+                     (nextNode->getCoordinates()).y);
+      ruta.addEdge(weight, true, currentNode, nextNode);
+      currentNode = nextNode;
+    }
+    return ruta;
+  }
+
+  int ***floydWarshall() {
+    int biMatriz[2][(this->nodes).size()][(this->nodes).size()];
+    for (int i = 0; i < (this->nodes).size(); i++) {
+      for (int j = 0; j < (this->nodes).size(); j++) {
+        if (i == j) {
+          biMatriz[0][i][j] = 0;
+          biMatriz[1][i][j] = 0;
+        } else {
+          biMatriz[0][i][j] = this->getWeight(i, j);
+          biMatriz[1][i][j] = j;
+        }
+      }
+    }
+
+    for (int i = 0; i < (this->nodes).size(); i++) {
+      for (int j = 0; j < (this->nodes).size(); j++) {
+        for (int k = 0; k < (this->nodes).size(); k++) {
+          if (biMatriz[0][i][k] != INT_MAX && biMatriz[0][j][i] != INT_MAX) {
+            if ((biMatriz[0][i][k] + biMatriz[0][j][i]) < biMatriz[0][j][k]) {
+              biMatriz[0][j][k] = biMatriz[0][i][k] + biMatriz[0][j][i];
+              biMatriz[1][j][k] = j;
+            }
+          }
+        }
+      }
+    }
+
+    for (int i = 0; i < 2; i++) {
+      for (int j = 0; j < (this->nodes).size(); j++) {
+        for (int k = 0; k < (this->nodes).size(); k++) {
+          if (biMatriz[i][j][k] == INT_MAX) {
+            std::cout << "INF" << '\t';
+          } else
+            std::cout << biMatriz[i][j][k] << '\t';
+        }
+        std::cout << '\n';
+      }
+      std::cout << "----------------------------------------------" << '\n';
+    }
+    std::cout << "----------------------------------------------" << '\n';
+  }
+
   // ********************* UTILITY *******************
+
+  node *findNode(N tag) {
+    if (nodes.find(tag) != nodes.end()) {
+      return nodes[tag];
+    } else
+      return nullptr;
+  }
 
   int getNumberOfNodes() const { return this->nodes.size(); }
 

@@ -32,8 +32,6 @@ public:
       throw std::invalid_argument(
           "Graph has a negative cycle, Bellman Ford can't provide exact "
           "solution.");
-    } else {
-      this->printTable();
     }
   }
   bool execute(N start) {
